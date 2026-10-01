@@ -1,0 +1,1676 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scanner Pro 🛰️ — République Française</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  :root {
+    --bleu: #0055A4;
+    --bleu-clair: #1a6ec0;
+    --bleu-fonce: #003d7a;
+    --blanc: #FFFFFF;
+    --rouge: #EF4135;
+    --rouge-fonce: #c7302a;
+    --dark: #0a1a2f;
+    --gray: #64748b;
+    --border: #e2e8f0;
+    --bg: #f4f6fb;
+    --card: #ffffff;
+    --success: #16a34a;
+    --warning: #f59e0b;
+    --danger: #dc2626;
+    --shadow-sm: 0 1px 3px rgba(0, 61, 122, 0.08);
+    --shadow: 0 4px 15px rgba(0, 61, 122, 0.10);
+    --shadow-lg: 0 20px 45px rgba(0, 61, 122, 0.18);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+  body {
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 0% 0%, rgba(0, 85, 164, 0.08) 0%, transparent 40%),
+      radial-gradient(circle at 100% 100%, rgba(239, 65, 53, 0.08) 0%, transparent 40%);
+    min-height: 100vh; padding: 20px; color: var(--dark);
+  }
+  .app {
+    max-width: 1500px; margin: 0 auto; background: var(--card);
+    border-radius: 22px; box-shadow: var(--shadow-lg); overflow: hidden;
+    border: 1px solid rgba(0, 85, 164, 0.08);
+  }
+
+  /* HEADER */
+  header {
+    position: relative;
+    background: linear-gradient(135deg, var(--bleu-fonce) 0%, var(--bleu) 55%, var(--bleu-clair) 100%);
+    color: white; padding: 32px 40px 28px; overflow: hidden;
+  }
+  header::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px;
+    background: linear-gradient(90deg,
+      var(--bleu) 0%, var(--bleu) 33.33%,
+      var(--blanc) 33.33%, var(--blanc) 66.66%,
+      var(--rouge) 66.66%, var(--rouge) 100%);
+  }
+  header::after {
+    content: ''; position: absolute; right: -40px; top: 50%; transform: translateY(-50%);
+    width: 340px; height: 340px;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='%23ffffff' stop-opacity='0.18'/><stop offset='100%' stop-color='%23ffffff' stop-opacity='0.04'/></linearGradient></defs><circle cx='100' cy='100' r='95' fill='url(%23g)'/><circle cx='100' cy='100' r='75' fill='none' stroke='%23ffffff' stroke-opacity='0.12' stroke-width='1'/><circle cx='100' cy='100' r='55' fill='none' stroke='%23ffffff' stroke-opacity='0.10' stroke-width='1'/><path d='M100 40 C 130 40 150 60 150 90 C 150 115 135 135 115 145 L 115 165 L 85 165 L 85 145 C 65 135 50 115 50 90 C 50 60 70 40 100 40 Z' fill='%23ffffff' fill-opacity='0.14'/><circle cx='100' cy='85' r='18' fill='%23ffffff' fill-opacity='0.20'/></svg>");
+    background-size: contain; background-repeat: no-repeat; opacity: 0.9; pointer-events: none;
+  }
+  .header-content { position: relative; z-index: 2; display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+  .blason {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: linear-gradient(135deg, #ffffff 0%, #e8eef7 100%);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25), inset 0 0 0 3px var(--bleu);
+    flex-shrink: 0; position: relative;
+  }
+  .blason::after {
+    content: ''; position: absolute; inset: -4px; border-radius: 50%;
+    background: conic-gradient(var(--bleu) 0 33%, var(--blanc) 33% 66%, var(--rouge) 66% 100%);
+    z-index: -1; opacity: 0.9;
+  }
+  .blason svg { width: 46px; height: 46px; }
+  .header-titles h1 { font-size: 1.9rem; font-weight: 800; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .header-titles h1 .rf {
+    font-size: 0.7rem; background: white; color: var(--bleu-fonce);
+    padding: 4px 10px; border-radius: 6px; font-weight: 800;
+    letter-spacing: 1.5px; text-transform: uppercase;
+  }
+  .header-titles p { opacity: 0.9; font-size: 0.98rem; margin-top: 4px; }
+  .tricolore-bar {
+    height: 4px;
+    background: linear-gradient(90deg,
+      var(--bleu) 0%, var(--bleu) 33.33%,
+      var(--blanc) 33.33%, var(--blanc) 66.66%,
+      var(--rouge) 66.66%, var(--rouge) 100%);
+  }
+
+  /* LAYOUT */
+  .main { display: grid; grid-template-columns: 380px 1fr; min-height: 600px; }
+  @media (max-width: 1024px) { .main { grid-template-columns: 1fr; } }
+
+  /* SIDEBAR */
+  .sidebar {
+    background: linear-gradient(180deg, #f8faff 0%, #eef3fa 100%);
+    padding: 26px 22px; border-right: 1px solid var(--border);
+    border-left: 4px solid var(--bleu);
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .sidebar h2 {
+    font-size: 0.95rem; font-weight: 700; color: var(--bleu-fonce);
+    margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+    text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .sidebar h2::before {
+    content: ''; width: 4px; height: 18px; background: var(--rouge); border-radius: 2px;
+  }
+  .input-label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.82rem; color: var(--dark); }
+  .form-input {
+    width: 100%; padding: 10px 12px; border: 2px solid var(--border);
+    border-radius: 10px; font-size: 0.9rem; margin-bottom: 12px;
+    background: white; transition: all 0.2s; color: var(--dark);
+  }
+  .form-input:focus { outline: none; border-color: var(--bleu); box-shadow: 0 0 0 4px rgba(0, 85, 164, 0.12); }
+  textarea.form-input { font-family: monospace; font-size: 0.8rem; resize: vertical; }
+  .btn {
+    width: 100%; padding: 12px 16px; border: none; border-radius: 10px;
+    font-weight: 700; cursor: pointer; font-size: 0.92rem;
+    transition: all 0.25s; display: flex; align-items: center; justify-content: center;
+    gap: 10px; letter-spacing: 0.02em;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--bleu) 0%, var(--bleu-fonce) 100%);
+    color: white; box-shadow: 0 4px 12px rgba(0, 85, 164, 0.28);
+    position: relative; overflow: hidden;
+  }
+  .btn-primary::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 5px; background: var(--rouge);
+  }
+  .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0, 85, 164, 0.35); }
+  .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; }
+  .btn-ghost {
+    background: white; color: var(--bleu-fonce);
+    border: 2px solid var(--border); margin-top: 8px;
+    font-size: 0.82rem; padding: 9px;
+  }
+  .btn-ghost:hover { border-color: var(--bleu); background: #f0f6ff; }
+
+  /* STATS */
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+  .stat-mini {
+    background: white; padding: 12px 6px; border-radius: 10px;
+    text-align: center; border: 1px solid var(--border);
+    transition: all 0.2s;
+  }
+  .stat-mini-val { font-size: 1.35rem; font-weight: 800; color: var(--bleu); line-height: 1; }
+  .stat-mini-lbl { font-size: 0.65rem; color: var(--gray); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; margin-top: 4px; }
+  .stat-mini:nth-child(6) .stat-mini-val,
+  .stat-mini:nth-child(8) .stat-mini-val { color: var(--rouge); }
+
+  /* TABS */
+  .tabs {
+    display: flex; gap: 4px; margin-bottom: 20px;
+    background: #f1f5fb; padding: 5px; border-radius: 12px;
+  }
+  .tab {
+    flex: 1; padding: 10px 8px; border: none; background: transparent;
+    border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.78rem;
+    color: var(--gray); transition: all 0.2s;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  }
+  .tab i { font-size: 1rem; }
+  .tab:hover { color: var(--bleu); }
+  .tab.active {
+    background: white; color: var(--bleu-fonce);
+    box-shadow: 0 2px 8px rgba(0, 61, 122, 0.08);
+  }
+
+  /* CONTENT */
+  .content { padding: 26px 30px; overflow-x: auto; background: white; }
+  .content-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 20px; padding-bottom: 14px; border-bottom: 2px solid var(--border);
+    position: relative; flex-wrap: wrap; gap: 12px;
+  }
+  .content-header::after {
+    content: ''; position: absolute; bottom: -2px; left: 0;
+    width: 60px; height: 2px; background: var(--rouge);
+  }
+  .content-header h2 { font-size: 1.3rem; color: var(--bleu-fonce); display: flex; align-items: center; gap: 10px; }
+  .results-info {
+    font-size: 0.85rem; color: var(--gray); background: #f1f5fb;
+    padding: 6px 14px; border-radius: 20px; font-weight: 600;
+  }
+
+  /* FILTERS */
+  .filters-bar {
+    display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;
+    padding: 12px; background: #f8fafc; border-radius: 10px; border: 1px solid var(--border);
+  }
+  .filter-btn {
+    padding: 6px 12px; border: 1px solid var(--border); background: white;
+    border-radius: 20px; font-size: 0.78rem; font-weight: 600; cursor: pointer;
+    transition: all 0.2s; color: var(--gray);
+  }
+  .filter-btn:hover { border-color: var(--bleu); color: var(--bleu); }
+  .filter-btn.active { background: var(--bleu); color: white; border-color: var(--bleu); }
+  .filter-search {
+    flex: 1; min-width: 180px; padding: 6px 14px; border: 1px solid var(--border);
+    border-radius: 20px; font-size: 0.82rem;
+  }
+  .filter-search:focus { outline: none; border-color: var(--bleu); }
+
+  /* TABLE */
+  table {
+    width: 100%; border-collapse: collapse; background: white;
+    border-radius: 12px; overflow: hidden;
+    box-shadow: var(--shadow-sm); border: 1px solid var(--border);
+  }
+  thead { background: linear-gradient(90deg, var(--bleu-fonce) 0%, var(--bleu) 100%); }
+  th {
+    padding: 12px 14px; text-align: left; font-size: 0.75rem;
+    font-weight: 700; color: white; text-transform: uppercase; letter-spacing: 0.06em;
+    white-space: nowrap;
+  }
+  td { padding: 11px 14px; font-size: 0.88rem; vertical-align: middle; border-bottom: 1px solid var(--border); }
+  tbody tr { transition: background 0.15s; }
+  tbody tr:hover { background: #f6f9ff; }
+  tbody tr:last-child td { border-bottom: none; }
+  .url-cell {
+    font-family: 'SF Mono', 'Courier New', monospace; font-size: 0.75rem;
+    color: var(--bleu-fonce); word-break: break-all; max-width: 420px; line-height: 1.4;
+  }
+  .url-cell a { color: var(--bleu); text-decoration: none; }
+  .url-cell a:hover { text-decoration: underline; color: var(--rouge); }
+
+  /* BADGES */
+  .badge {
+    padding: 3px 10px; border-radius: 20px; font-size: 0.7rem;
+    font-weight: 700; letter-spacing: 0.03em; display: inline-block; white-space: nowrap;
+  }
+  .badge-internal { background: rgba(0, 85, 164, 0.12); color: var(--bleu-fonce); }
+  .badge-external { background: rgba(100, 116, 139, 0.15); color: #475569; }
+  .badge-pdf { background: rgba(239, 65, 53, 0.12); color: var(--rouge-fonce); }
+  .badge-image { background: rgba(245, 158, 11, 0.15); color: #b45309; }
+  .badge-doc { background: rgba(22, 163, 74, 0.12); color: #15803d; }
+  .badge-video { background: rgba(139, 92, 246, 0.15); color: #6d28d9; }
+  .badge-audio { background: rgba(236, 72, 153, 0.15); color: #be185d; }
+  .badge-html { background: rgba(100, 116, 139, 0.12); color: #475569; }
+
+  /* PERTINENCE */
+  .pertinence-wrap { display: flex; align-items: center; gap: 8px; }
+  .pertinence-bar { width: 50px; height: 6px; background: #e9eef5; border-radius: 3px; overflow: hidden; }
+  .pertinence-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--bleu), var(--rouge)); }
+  .pertinence-val { font-size: 0.78rem; font-weight: 600; color: var(--gray); min-width: 30px; }
+
+  /* PAGINATION */
+  .pagination {
+    display: flex; justify-content: center; align-items: center; gap: 8px;
+    margin-top: 18px; padding: 12px;
+  }
+  .pagination button {
+    padding: 7px 14px; border: 1px solid var(--border); background: white;
+    border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.82rem;
+    transition: all 0.2s; color: var(--dark);
+  }
+  .pagination button:hover:not(:disabled) { border-color: var(--bleu); color: var(--bleu); }
+  .pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .pagination-info { font-size: 0.82rem; color: var(--gray); font-weight: 600; }
+
+  /* LOADER */
+  .loader { text-align: center; padding: 60px 20px; color: var(--gray); }
+  .spinner {
+    width: 48px; height: 48px; margin: 0 auto 18px; border-radius: 50%;
+    border: 4px solid #e9eef5; border-top-color: var(--bleu);
+    border-right-color: var(--rouge); animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { 100% { transform: rotate(360deg); } }
+
+  /* ERRORS + DIAG */
+  .errors-box {
+    margin-top: 20px; padding: 14px 16px;
+    background: #fef2f2; border-left: 4px solid var(--rouge); border-radius: 10px;
+  }
+  .errors-box strong { color: var(--rouge-fonce); display: block; margin-bottom: 8px; font-size: 0.9rem; }
+  .errors-box ul { font-size: 0.8rem; color: #7f1d1d; padding-left: 20px; line-height: 1.6; }
+  .errors-box code { background: rgba(0,0,0,0.05); padding: 1px 5px; border-radius: 4px; font-size: 0.75rem; }
+
+  .diag-box {
+    margin-top: 18px; padding: 14px 16px;
+    background: #f8fafc; border-radius: 10px; border: 1px solid var(--border);
+  }
+  .diag-box strong { color: var(--bleu-fonce); font-size: 0.9rem; }
+  .diag-box ul { margin-top: 8px; font-size: 0.8rem; color: var(--gray); padding-left: 20px; line-height: 1.7; }
+
+  /* DOMAINS */
+  .domains-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 8px; margin-top: 10px;
+  }
+  .domain-card {
+    background: white; border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 12px; display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.82rem;
+  }
+  .domain-name { font-family: monospace; color: var(--bleu-fonce); font-weight: 600; }
+  .domain-count {
+    background: var(--bleu); color: white; padding: 2px 10px;
+    border-radius: 12px; font-size: 0.72rem; font-weight: 700;
+  }
+
+  /* ENDPOINTS */
+  .endpoint-item {
+    background: white; padding: 10px 14px; border-radius: 8px;
+    border: 1px solid var(--border); border-left: 3px solid var(--bleu);
+    margin-bottom: 8px; font-size: 0.85rem;
+  }
+  .method-badge {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-weight: 700; font-size: 0.7rem; margin-right: 8px;
+    color: white;
+  }
+  .method-GET { background: var(--success); }
+  .method-POST { background: var(--bleu); }
+  .method-PUT, .method-PATCH { background: var(--warning); }
+  .method-DELETE { background: var(--rouge); }
+
+  /* JSON PREVIEW */
+  pre.json-preview {
+    background: #f1f5f9; padding: 12px; border-radius: 8px;
+    font-size: 0.72rem; line-height: 1.5; max-height: 400px; overflow: auto;
+    white-space: pre-wrap; word-break: break-word;
+  }
+
+  /* TOASTS */
+  .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; }
+  .toast {
+    background: white; padding: 14px 20px; border-radius: 10px;
+    box-shadow: 0 8px 25px rgba(0, 61, 122, 0.18);
+    border-left: 4px solid var(--bleu); font-size: 0.88rem; font-weight: 500;
+    animation: slideIn 0.3s ease; min-width: 260px; max-width: 400px;
+  }
+  .toast.success { border-left-color: var(--success); }
+  .toast.error { border-left-color: var(--rouge); }
+  @keyframes slideIn {
+    from { transform: translateX(120%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+
+  /* FOOTER */
+  .footer {
+    padding: 16px 30px; background: #f8fafc;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.8rem; color: var(--gray);
+    border-top: 1px solid var(--border); flex-wrap: wrap; gap: 10px;
+  }
+  .footer-motto {
+    display: flex; gap: 12px; align-items: center;
+    font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.7rem;
+  }
+  .footer-motto span:nth-child(1) { color: var(--bleu); }
+  .footer-motto span:nth-child(2) { color: var(--gray); }
+  .footer-motto span:nth-child(3) { color: var(--rouge); }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header>
+    <div class="header-content">
+      <div class="blason" aria-hidden="true">
+        <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="rfGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#0055A4"/>
+              <stop offset="100%" stop-color="#003d7a"/>
+            </linearGradient>
+          </defs>
+          <text x="30" y="42" text-anchor="middle"
+                font-family="Georgia, serif" font-size="34" font-weight="bold"
+                fill="url(#rfGrad)" letter-spacing="-1">RF</text>
+        </svg>
+      </div>
+      <div class="header-titles">
+        <h1>Scanner Pro <span class="rf">République Française</span></h1>
+        <p>Extraction, analyse d'APIs, scan sitemap — Liberté · Égalité · Fraternité</p>
+      </div>
+    </div>
+  </header>
+  <div class="tricolore-bar"></div>
+
+  <div class="main">
+    <aside class="sidebar">
+      <div class="tabs" id="sideTabs">
+        <button class="tab active" data-mode="scan">
+          <i class="fas fa-satellite-dish"></i>
+          Scan
+        </button>
+        <button class="tab" data-mode="full">
+          <i class="fas fa-spider"></i>
+          Complet
+        </button>
+        <button class="tab" data-mode="api">
+          <i class="fas fa-plug"></i>
+          APIs
+        </button>
+      </div>
+
+      <!-- ═══════════════ MODE SCAN ═══════════════ -->
+      <div id="modeScan">
+        <h2>Cible</h2>
+        <label class="input-label">URL à scanner</label>
+        <input type="url" id="targetUrl" class="form-input"
+               value="https://www.data.gouv.fr/fr/" placeholder="https://exemple.com">
+
+        <label class="input-label">Profondeur</label>
+        <select id="depth" class="form-input">
+          <option value="0">0 — Page principale</option>
+          <option value="1" selected>1 — + sous-pages</option>
+          <option value="2">2 — + sous-sous-pages</option>
+        </select>
+
+        <label class="input-label">Pages maximum</label>
+        <select id="maxPages" class="form-input">
+          <option value="1">1</option>
+          <option value="5" selected>5</option>
+          <option value="10">10</option>
+          <option value="20">20</option>
+          <option value="50">50</option>
+        </select>
+
+        <label class="input-label">Mode</label>
+        <select id="useBrowser" class="form-input">
+          <option value="true" selected>Auto (undici + Puppeteer)</option>
+          <option value="false">Rapide (undici uniquement)</option>
+        </select>
+
+        <button id="btnScan" class="btn btn-primary">
+          <i class="fas fa-satellite-dish"></i> Lancer le scan
+        </button>
+        <button id="btnForceScan" class="btn btn-ghost">
+          <i class="fas fa-redo"></i> Forcer (ignorer cache)
+        </button>
+        <button id="btnExtractAll" class="btn btn-ghost">
+          <i class="fas fa-download"></i> Extraire PDF/JSON/CSV/XLSX
+        </button>
+        <button id="btnDetectApis" class="btn btn-ghost">
+          <i class="fas fa-code"></i> Détecter APIs de la page
+        </button>
+
+        <h2 style="margin-top: 22px;">Statistiques</h2>
+        <div class="stats-grid">
+          <div class="stat-mini"><div class="stat-mini-val" id="statTotal">0</div><div class="stat-mini-lbl">Liens</div></div>
+          <div class="stat-mini"><div class="stat-mini-val" id="statInternal">0</div><div class="stat-mini-lbl">Internes</div></div>
+          <div class="stat-mini"><div class="stat-mini-val" id="statExternal">0</div><div class="stat-mini-lbl">Externes</div></div>
+          <div class="stat-mini"><div class="stat-mini-val" id="statPages">0</div><div class="stat-mini-lbl">Pages</div></div>
+          <div class="stat-mini"><div class="stat-mini-val" id="statImages">0</div><div class="stat-mini-lbl">Images</div></div>
+          <div class="stat-mini"><div class="stat-mini-val" id="statPdf">0</div><div class="stat-mini-lbl">PDF</div></div>
+          <div class="stat-mini"><div class="stat-mini-val" id="statDocs">0</div><div class="stat-mini-lbl">Docs</div></div>
+          <div class="stat-mini"><div class="stat-mini-val" id="statErrors">0</div><div class="stat-mini-lbl">Erreurs</div></div>
+        </div>
+      </div>
+
+      <!-- ═══════════════ MODE COMPLET ═══════════════ -->
+      <div id="modeFull" style="display:none;">
+        <h2>🕷️ Scan complet du site</h2>
+        <p style="font-size: 0.78rem; color: var(--gray); margin-bottom: 12px;">
+          Utilise le sitemap.xml et les flux RSS pour découvrir toutes les pages.
+        </p>
+
+        <label class="input-label">URL du site</label>
+        <input type="url" id="fullUrl" class="form-input"
+               value="https://www.data.gouv.fr" placeholder="https://exemple.com">
+
+        <label class="input-label">Nombre maximum d'URLs</label>
+        <select id="fullMaxUrls" class="form-input">
+          <option value="20">20</option>
+          <option value="50" selected>50</option>
+          <option value="100">100</option>
+          <option value="200">200</option>
+          <option value="500">500</option>
+        </select>
+
+        <label class="input-label">Concurrence</label>
+        <select id="fullConcurrency" class="form-input">
+          <option value="1">1 (lent, sûr)</option>
+          <option value="3" selected>3 (recommandé)</option>
+          <option value="5">5 (rapide)</option>
+          <option value="10">10 (agressif)</option>
+        </select>
+
+        <label class="input-label">Mode</label>
+        <select id="fullUseBrowser" class="form-input">
+          <option value="true" selected>Auto (undici + Puppeteer)</option>
+          <option value="false">Rapide (undici uniquement)</option>
+        </select>
+
+        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+          <input type="checkbox" id="fullIncludeRSS" checked>
+          <span style="font-size: 0.82rem;">Inclure flux RSS</span>
+        </label>
+
+        <button id="btnScanFull" class="btn btn-primary">
+          <i class="fas fa-spider"></i> Lancer le scan complet
+        </button>
+        <button id="btnDetectSitemap" class="btn btn-ghost">
+          <i class="fas fa-map"></i> Détecter le sitemap
+        </button>
+
+        <h2 style="margin-top: 22px;">Résumé</h2>
+        <div class="stats-grid">
+          <div class="stat-mini"><div class="stat-mini-val" id="statFullUrls">0</div><div class="stat-mini-lbl">URLs sitemap</div></div>
+          <div class="stat-mini"><div class="stat-mini-val" id="statFullScanned">0</div><div class="stat-mini-lbl">Pages scannées</div></div>
+          <div class="stat-mini"><div class="stat-mini-val" id="statFullLinks">0</div><div class="stat-mini-lbl">Liens</div></div>
+          <div class="stat-mini"><div class="stat-mini-val" id="statFullErrors">0</div><div class="stat-mini-lbl">Erreurs</div></div>
+        </div>
+      </div>
+
+      <!-- ═══════════════ MODE API ═══════════════ -->
+      <div id="modeApi" style="display:none;">
+        <h2>🔌 Test API REST</h2>
+        <label class="input-label">URL</label>
+        <input type="text" id="apiUrl" class="form-input"
+               placeholder="https://api.exemple.com/v1/...">
+
+        <label class="input-label">Méthode</label>
+        <select id="apiMethod" class="form-input">
+          <option>GET</option>
+          <option>POST</option>
+          <option>PUT</option>
+          <option>DELETE</option>
+        </select>
+
+        <label class="input-label">Headers (JSON)</label>
+        <textarea id="apiHeaders" class="form-input" rows="3">{}</textarea>
+
+        <label class="input-label">Body (JSON)</label>
+        <textarea id="apiBody" class="form-input" rows="3"></textarea>
+
+        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+          <input type="checkbox" id="apiInsecure">
+          <span style="font-size: 0.82rem;">Ignorer SSL (dev)</span>
+        </label>
+
+        <button class="btn btn-primary" onclick="probeAPI()">
+          <i class="fas fa-flask"></i> Tester
+        </button>
+
+        <h2 style="margin-top: 22px;">📚 Swagger</h2>
+        <label class="input-label">URL du fichier Swagger/OpenAPI</label>
+        <input type="text" id="swaggerUrl" class="form-input"
+               placeholder="https://.../openapi.json">
+
+        <button class="btn btn-ghost" onclick="analyzeSwagger()">
+          <i class="fas fa-book"></i> Analyser la doc
+        </button>
+
+        <h2 style="margin-top: 22px;">🇫🇷 APIs de l'État</h2>
+        <button class="btn btn-ghost" onclick="loadCatalog()">
+          <i class="fas fa-book"></i> Catalogue complet
+        </button>
+        <button class="btn btn-ghost" onclick="loadFicoba()">
+          <i class="fas fa-landmark"></i> FICOBA v2 (DGFiP)
+        </button>
+      </div>
+    </aside>
+
+    <main class="content">
+      <div class="content-header">
+        <h2 id="contentTitle"><i class="fas fa-list-ul" style="color: var(--rouge);"></i> Résultats</h2>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <div class="results-info" id="resultsInfo">En attente…</div>
+          <button class="btn btn-ghost" style="width:auto; padding:5px 10px; font-size:0.78rem; margin:0;" onclick="exportCSV()">
+            <i class="fas fa-file-csv"></i> CSV
+          </button>
+          <button class="btn btn-ghost" style="width:auto; padding:5px 10px; font-size:0.78rem; margin:0;" onclick="exportJSON()">
+            <i class="fas fa-file-code"></i> JSON
+          </button>
+        </div>
+      </div>
+
+      <div id="filtersWrapper" style="display: none;">
+        <div class="filters-bar">
+          <button class="filter-btn active" data-filter="all">Tout</button>
+          <button class="filter-btn" data-filter="internal">Internes</button>
+          <button class="filter-btn" data-filter="external">Externes</button>
+          <button class="filter-btn" data-filter="html">HTML</button>
+          <button class="filter-btn" data-filter="image">Images</button>
+          <button class="filter-btn" data-filter="pdf">PDF</button>
+          <button class="filter-btn" data-filter="document">Documents</button>
+          <input type="text" class="filter-search" id="filterSearch" placeholder="🔍 Rechercher…">
+        </div>
+      </div>
+
+      <div id="results">
+        <div class="loader">
+          <div class="spinner"></div>
+          <p>Prêt à scanner, analyser une API, ou lancer un scan complet.</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="footer">
+    <div class="footer-motto">
+      <span>Liberté</span><span>•</span><span>Égalité</span><span>•</span><span>Fraternité</span>
+    </div>
+    <div id="footerInfo">Scanner Pro v4.0 — undici + Puppeteer + Sitemap + Catalogue APIs</div>
+  </div>
+</div>
+
+<div class="toast-container" id="toasts"></div>
+
+<script>
+const $ = sel => document.querySelector(sel);
+const $$ = sel => document.querySelectorAll(sel);
+
+let state = {
+  allLinks: [],
+  filteredLinks: [],
+  currentFilter: 'all',
+  currentSearch: '',
+  currentPage: 1,
+  perPage: 50,
+  stats: null,
+  pages: [],
+  errors: []
+};
+
+// ═══════════════════════════════════════════════════════════
+//  UTILITAIRES
+// ═══════════════════════════════════════════════════════════
+
+function toast(msg, type = 'info') {
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  $('#toasts').appendChild(t);
+  setTimeout(() => t.remove(), 4500);
+}
+
+function escapeHtml(t) {
+  return String(t ?? '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  TABS
+// ═══════════════════════════════════════════════════════════
+
+$$('#sideTabs .tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    $$('#sideTabs .tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const mode = tab.dataset.mode;
+
+    $('#modeScan').style.display = mode === 'scan' ? 'block' : 'none';
+    $('#modeFull').style.display = mode === 'full' ? 'block' : 'none';
+    $('#modeApi').style.display = mode === 'api' ? 'block' : 'none';
+
+    const titles = {
+      scan: '<i class="fas fa-list-ul" style="color: var(--rouge);"></i> Résultats du scan',
+      full: '<i class="fas fa-spider" style="color: var(--rouge);"></i> Scan complet',
+      api: '<i class="fas fa-plug" style="color: var(--rouge);"></i> Résultats API'
+    };
+    $('#contentTitle').innerHTML = titles[mode] || 'Résultats';
+  });
+});
+
+// ═══════════════════════════════════════════════════════════
+//  BADGES
+// ═══════════════════════════════════════════════════════════
+
+function badgeFor(link) {
+  const rt = link.resourceType;
+  if (rt === 'pdf') return '<span class="badge badge-pdf">PDF</span>';
+  if (rt === 'image') return '<span class="badge badge-image">IMAGE</span>';
+  if (rt === 'video') return '<span class="badge badge-video">VIDÉO</span>';
+  if (rt === 'audio') return '<span class="badge badge-audio">AUDIO</span>';
+  if (['doc','docx','xls','xlsx','csv','txt'].includes(rt))
+    return `<span class="badge badge-doc">${rt.toUpperCase()}</span>`;
+  if (link.type === 'internal') return '<span class="badge badge-internal">INTERNE</span>';
+  if (link.type === 'external') return '<span class="badge badge-external">EXTERNE</span>';
+  return '<span class="badge badge-html">HTML</span>';
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SCAN SIMPLE
+// ═══════════════════════════════════════════════════════════
+
+async function scan(force = false) {
+  const url = $('#targetUrl').value.trim();
+  const depth = parseInt($('#depth').value, 10);
+  const maxPages = parseInt($('#maxPages').value, 10);
+  const useBrowser = $('#useBrowser').value === 'true';
+
+  if (!url) return toast('URL manquante', 'error');
+
+  $('#btnScan').disabled = true;
+  $('#btnForceScan').disabled = true;
+  $('#results').innerHTML = `
+    <div class="loader">
+      <div class="spinner"></div>
+      <p>Scan en cours…</p>
+      <p style="font-size: 0.82rem; margin-top: 8px; color: #94a3b8;">
+        10 à 90 secondes selon le site.
+      </p>
+    </div>`;
+  $('#resultsInfo').textContent = 'Scan en cours…';
+  $('#filtersWrapper').style.display = 'none';
+
+  try {
+    const res = await fetch('/api/scan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, depth, maxPages, useBrowser, skipCache: force })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    state.allLinks = data.links;
+    state.stats = data.stats;
+    state.pages = data.pages;
+    state.errors = data.errors;
+    state.currentFilter = 'all';
+    state.currentSearch = '';
+    state.currentPage = 1;
+
+    updateStats(data.stats);
+    applyFilters();
+    $('#filtersWrapper').style.display = 'block';
+
+    const cacheMsg = data.fromCache ? ' (cache)' : '';
+    toast(`Scan terminé : ${data.stats.total} ressources${cacheMsg}`, 'success');
+  } catch (e) {
+    console.error(e);
+    $('#results').innerHTML = `
+      <div class="loader">
+        <p style="color: var(--rouge); font-weight: 600;">Erreur : ${escapeHtml(e.message)}</p>
+      </div>`;
+    $('#resultsInfo').textContent = 'Erreur';
+    toast(e.message, 'error');
+  } finally {
+    $('#btnScan').disabled = false;
+    $('#btnForceScan').disabled = false;
+  }
+}
+
+function updateStats(s) {
+  $('#statTotal').textContent = s.total;
+  $('#statInternal').textContent = s.internal;
+  $('#statExternal').textContent = s.external;
+  $('#statPages').textContent = s.pages;
+  $('#statImages').textContent = s.images;
+  $('#statPdf').textContent = s.pdf;
+  $('#statDocs').textContent = s.documents;
+  $('#statErrors').textContent = s.errors;
+
+  const dur = s.durationMs ? ` • ${(s.durationMs / 1000).toFixed(1)}s` : '';
+  const br = s.usedBrowser ? ' • navigateur' : '';
+  $('#resultsInfo').textContent = `${s.total} élément${s.total > 1 ? 's' : ''}${dur}${br}`;
+  $('#footerInfo').textContent = `Scanner Pro v4.0 — ${s.total} liens • ${s.pages} pages${dur}`;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  FILTRES
+// ═══════════════════════════════════════════════════════════
+
+function applyFilters() {
+  let data = [...state.allLinks];
+  const f = state.currentFilter;
+  const q = state.currentSearch.toLowerCase().trim();
+
+  if (f === 'internal') data = data.filter(l => l.type === 'internal');
+  else if (f === 'external') data = data.filter(l => l.type === 'external');
+  else if (f === 'html') data = data.filter(l => l.resourceType === 'html' || l.resourceType === 'other');
+  else if (f === 'image') data = data.filter(l => l.resourceType === 'image');
+  else if (f === 'pdf') data = data.filter(l => l.resourceType === 'pdf');
+  else if (f === 'document') data = data.filter(l => ['doc','docx','xls','xlsx','csv','txt'].includes(l.resourceType));
+
+  if (q) {
+    data = data.filter(l =>
+      l.url.toLowerCase().includes(q) || l.title.toLowerCase().includes(q)
+    );
+  }
+
+  state.filteredLinks = data;
+  state.currentPage = 1;
+  renderPage();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  RENDU
+// ═══════════════════════════════════════════════════════════
+
+function renderPage() {
+  const total = state.filteredLinks.length;
+  if (total === 0) {
+    $('#results').innerHTML = `
+      <div class="loader">
+        <p style="font-weight: 600; color: var(--bleu-fonce);">Aucun résultat pour ce filtre.</p>
+      </div>
+      ${renderErrors(state.errors)}
+      ${renderPagesDiag(state.pages)}
+      ${renderDomains(state.stats?.topDomains)}`;
+    return;
+  }
+
+  const start = (state.currentPage - 1) * state.perPage;
+  const pageData = state.filteredLinks.slice(start, start + state.perPage);
+  const totalPages = Math.ceil(total / state.perPage);
+
+  const rows = pageData.map(l => `
+    <tr>
+      <td>
+        <div style="font-weight:600; margin-bottom:4px;">${escapeHtml(l.title)}</div>
+        <div class="url-cell">
+          <a href="${escapeHtml(l.url)}" target="_blank" rel="noopener">${escapeHtml(l.url)}</a>
+        </div>
+      </td>
+      <td>${badgeFor(l)}</td>
+      <td style="font-size:0.82rem; color: var(--gray);">${escapeHtml(l.source)}</td>
+      <td>
+        <div class="pertinence-wrap">
+          <div class="pertinence-bar">
+            <div class="pertinence-fill" style="width:${(l.relevance * 100).toFixed(0)}%;"></div>
+          </div>
+          <span class="pertinence-val">${l.relevance.toFixed(2)}</span>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+
+  $('#results').innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th style="width:55%">Titre / URL</th>
+          <th>Type</th>
+          <th>Source</th>
+          <th>Pertinence</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="pagination">
+      <button onclick="goToPage(1)" ${state.currentPage === 1 ? 'disabled' : ''}>«</button>
+      <button onclick="goToPage(${state.currentPage - 1})" ${state.currentPage === 1 ? 'disabled' : ''}>← Précédent</button>
+      <span class="pagination-info">Page ${state.currentPage} / ${totalPages} — ${total} résultat${total > 1 ? 's' : ''}</span>
+      <button onclick="goToPage(${state.currentPage + 1})" ${state.currentPage === totalPages ? 'disabled' : ''}>Suivant →</button>
+      <button onclick="goToPage(${totalPages})" ${state.currentPage === totalPages ? 'disabled' : ''}>»</button>
+    </div>
+    ${renderErrors(state.errors)}
+    ${renderPagesDiag(state.pages)}
+    ${renderDomains(state.stats?.topDomains)}
+  `;
+}
+
+function goToPage(p) {
+  const totalPages = Math.ceil(state.filteredLinks.length / state.perPage);
+  if (p < 1 || p > totalPages) return;
+  state.currentPage = p;
+  renderPage();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderErrors(errors) {
+  if (!errors || !errors.length) return '';
+  return `
+    <div class="errors-box">
+      <strong>⚠ ${errors.length} erreur${errors.length > 1 ? 's' : ''}</strong>
+      <ul>
+        ${errors.slice(0, 20).map(e =>
+          `<li><code>${escapeHtml(e.url)}</code> — ${escapeHtml(e.error)}</li>`
+        ).join('')}
+        ${errors.length > 20 ? `<li>… et ${errors.length - 20} autres</li>` : ''}
+      </ul>
+    </div>`;
+}
+
+function renderPagesDiag(pages) {
+  if (!pages || !pages.length) return '';
+  return `
+    <div class="diag-box">
+      <strong>📄 Pages scannées (${pages.length})</strong>
+      <ul>
+        ${pages.slice(0, 30).map(p =>
+          `<li><code>${escapeHtml(p.url)}</code> — ${p.linksFound} liens (${p.via})</li>`
+        ).join('')}
+        ${pages.length > 30 ? `<li>… et ${pages.length - 30} autres</li>` : ''}
+      </ul>
+    </div>`;
+}
+
+function renderDomains(topDomains) {
+  if (!topDomains || !topDomains.length) return '';
+  return `
+    <div class="diag-box">
+      <strong>🌐 Top domaines rencontrés</strong>
+      <div class="domains-grid">
+        ${topDomains.map(d => `
+          <div class="domain-card">
+            <span class="domain-name">${escapeHtml(d.domain)}</span>
+            <span class="domain-count">${d.count}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  EXTRACTION
+// ═══════════════════════════════════════════════════════════
+
+async function extractAll() {
+  const targets = state.filteredLinks.filter(l =>
+    ['pdf', 'json', 'csv', 'xlsx', 'xls'].includes(l.resourceType)
+  );
+
+  if (targets.length === 0) {
+    return toast('Aucun fichier PDF/JSON/CSV/XLSX dans les résultats', 'error');
+  }
+
+  if (!confirm(`Extraire ${targets.length} fichier(s) ?\n\nCela peut prendre 1 à 3 minutes.`)) return;
+
+  toast(`Extraction de ${targets.length} fichiers…`, 'info');
+  showModal('Extraction en cours…', `Traitement de ${targets.length} fichier(s)`);
+
+  try {
+    const res = await fetch('/api/extract', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ urls: targets.map(t => t.url) })
+    });
+
+    const data = await res.json();
+    hideModal();
+    renderExtractionResults(data.results);
+    toast(`✅ ${data.results.length} fichiers extraits`, 'success');
+  } catch (err) {
+    hideModal();
+    toast(`Erreur : ${err.message}`, 'error');
+  }
+}
+
+function renderExtractionResults(results) {
+  const container = document.createElement('div');
+  container.className = 'diag-box extraction-results';
+  container.style.marginTop = '20px';
+
+  const successCount = results.filter(r => r.success !== false).length;
+
+  container.innerHTML = `
+    <strong>📦 Extraction — ${successCount}/${results.length} succès</strong>
+    <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 10px;">
+      ${results.map(r => `
+        <details style="background: white; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border);">
+          <summary style="cursor: pointer; font-weight: 600; font-size: 0.82rem; color: var(--bleu-fonce);">
+            ${r.success === false ? '❌' : '✅'} ${escapeHtml((r.url || '').substring(0, 80))}${(r.url || '').length > 80 ? '…' : ''}
+          </summary>
+          <div style="margin-top: 10px; font-size: 0.78rem; color: var(--gray);">
+            ${renderExtractionDetail(r)}
+          </div>
+        </details>
+      `).join('')}
+    </div>
+  `;
+
+  const existing = $('#results').querySelector('.extraction-results');
+  if (existing) existing.remove();
+  $('#results').appendChild(container);
+}
+
+function renderExtractionDetail(r) {
+  if (r.error) return `<p style="color: var(--rouge);">Erreur : ${escapeHtml(r.error)}</p>`;
+
+  if (r.pages !== undefined) {
+    return `
+      <p><strong>PDF</strong> — ${r.pages} pages, ${(r.size / 1024).toFixed(1)} Ko</p>
+      ${r.info?.Title ? `<p>Titre : ${escapeHtml(r.info.Title)}</p>` : ''}
+      ${r.info?.Author ? `<p>Auteur : ${escapeHtml(r.info.Author)}</p>` : ''}
+      ${r.urlsInText?.length ? `<p><strong>${r.urlsInText.length} URL(s) dans le PDF</strong></p>` : ''}
+      ${r.emails?.length ? `<p><strong>Emails</strong> : ${r.emails.map(escapeHtml).join(', ')}</p>` : ''}
+      ${r.text ? `<details><summary>Extrait texte (${r.textLength} car.)</summary><pre class="json-preview">${escapeHtml(r.text.substring(0, 1500))}</pre></details>` : ''}
+    `;
+  }
+
+  if (r.keys !== undefined) {
+    return `
+      <p><strong>JSON</strong> — ${(r.size / 1024).toFixed(1)} Ko${r.isArray ? ` — Array de ${r.arrayLength}` : ''}</p>
+      ${r.keys?.length ? `<p><strong>Clés</strong> : <code>${r.keys.join(', ')}</code></p>` : ''}
+      ${r.urlsFound?.length ? `<p><strong>${r.urlsFound.length} URL(s) trouvée(s)</strong></p>` : ''}
+      ${r.sample ? `<details><summary>Échantillon</summary><pre class="json-preview">${escapeHtml(r.sample)}</pre></details>` : ''}
+    `;
+  }
+
+  if (r.rowCount !== undefined) {
+    return `
+      <p><strong>CSV</strong> — ${r.rowCount} ligne(s), ${r.columns?.length || 0} colonne(s)</p>
+      <p><strong>Colonnes</strong> : <code>${(r.columns || []).join(', ')}</code></p>
+    `;
+  }
+
+  if (r.sheets !== undefined) {
+    return `
+      <p><strong>XLSX</strong> — ${r.sheetCount} feuille(s), ${(r.size / 1024).toFixed(1)} Ko</p>
+      <ul>${r.sheets.map(s => `<li><strong>${escapeHtml(s.name)}</strong> — ${s.rows} lignes × ${s.columns} colonnes</li>`).join('')}</ul>
+    `;
+  }
+
+  return `<pre class="json-preview">${escapeHtml(JSON.stringify(r, null, 2).substring(0, 1000))}</pre>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  DÉTECTION D'APIs
+// ═══════════════════════════════════════════════════════════
+
+async function detectApis() {
+  const url = $('#targetUrl').value.trim();
+  if (!url) return toast('URL manquante', 'error');
+
+  toast('Détection des APIs en cours…', 'info');
+  showModal('Analyse en cours…', 'Extraction des endpoints depuis le JavaScript');
+
+  try {
+    const res = await fetch('/api/detect-apis', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, probe: false })
+    });
+
+    const data = await res.json();
+    hideModal();
+    renderApiDetection(data);
+    toast(`✅ ${data.endpointsCount} endpoint(s) détecté(s)`, 'success');
+  } catch (err) {
+    hideModal();
+    toast(`Erreur : ${err.message}`, 'error');
+  }
+}
+
+function renderApiDetection(data) {
+  const container = document.createElement('div');
+  container.className = 'diag-box api-detection';
+  container.style.marginTop = '20px';
+
+  container.innerHTML = `
+    <strong>🔌 APIs détectées — ${data.endpointsCount} endpoint(s)</strong>
+    <p style="font-size: 0.8rem; color: var(--gray); margin-top: 6px;">
+      Framework : <code>${escapeHtml(data.framework || 'inconnu')}</code>
+    </p>
+    ${data.endpoints.length === 0
+      ? '<p style="color: var(--gray); font-size: 0.85rem; margin-top: 10px;">Aucun endpoint détecté.</p>'
+      : `
+        <div style="margin-top: 12px;">
+          ${data.endpoints.map(ep => `
+            <div class="endpoint-item">
+              <a href="${escapeHtml(ep)}" target="_blank" style="color: var(--bleu); font-family: monospace; font-size: 0.8rem;">
+                ${escapeHtml(ep)}
+              </a>
+            </div>
+          `).join('')}
+        </div>
+      `}
+  `;
+
+  const existing = $('#results').querySelector('.api-detection');
+  if (existing) existing.remove();
+  $('#results').appendChild(container);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SCAN COMPLET (SITEMAP)
+// ═══════════════════════════════════════════════════════════
+
+async function detectSitemap() {
+  const url = $('#fullUrl').value.trim();
+  if (!url) return toast('URL manquante', 'error');
+
+  $('#results').innerHTML = '<div class="loader"><div class="spinner"></div><p>Recherche du sitemap…</p></div>';
+
+  try {
+    const res = await fetch('/api/sitemap', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, includeRSS: $('#fullIncludeRSS').checked })
+    });
+
+    const data = await res.json();
+
+    if (!data.success) {
+      $('#results').innerHTML = `
+        <div class="errors-box">
+          <strong>❌ Aucun sitemap trouvé</strong>
+          <p style="margin-top: 8px;">${escapeHtml(data.error || 'Erreur inconnue')}</p>
+          <p style="margin-top: 8px; font-size: 0.82rem;">
+            Essaie avec <code>${escapeHtml(url)}/sitemap.xml</code> directement,
+            ou lance un scan normal.
+          </p>
+        </div>`;
+      return;
+    }
+
+    const sm = data.sitemap;
+    $('#statFullUrls').textContent = sm.totalUrls || 0;
+
+    $('#results').innerHTML = `
+      <div class="diag-box">
+        <strong>✅ Sitemap trouvé</strong>
+        <p style="margin-top: 8px; font-size: 0.85rem;">
+          Type : <strong>${escapeHtml(sm.type)}</strong> —
+          URL : <code>${escapeHtml(sm.sitemapUrl)}</code>
+        </p>
+        ${sm.type === 'index' ? `
+          <p style="font-size: 0.85rem; margin-top: 6px;">
+            ${sm.subSitemapsCount} sous-sitemaps détectés,
+            ${sm.subSitemapsUsed} utilisés
+          </p>
+        ` : ''}
+        <p style="font-size: 0.85rem; margin-top: 6px;">
+          <strong>${sm.totalUrls}</strong> URLs prêtes à être scannées
+        </p>
+        ${sm.urls?.length ? `
+          <details style="margin-top: 12px;">
+            <summary style="cursor: pointer; font-weight: 600; font-size: 0.85rem;">
+              Voir les 20 premières URLs
+            </summary>
+            <ul style="margin-top: 8px; font-size: 0.78rem; padding-left: 20px; max-height: 300px; overflow: auto;">
+              ${sm.urls.slice(0, 20).map(u => `
+                <li><a href="${escapeHtml(u.url)}" target="_blank">${escapeHtml(u.url)}</a>
+                  ${u.lastmod ? `<span style="color: var(--gray);"> (${u.lastmod})</span>` : ''}
+                </li>
+              `).join('')}
+            </ul>
+          </details>
+        ` : ''}
+        ${data.rss?.success ? `
+          <p style="margin-top: 12px; font-size: 0.85rem;">
+            📰 Flux RSS : <strong>${data.rss.urls.length}</strong> URLs supplémentaires
+          </p>
+        ` : ''}
+      </div>
+    `;
+
+    toast(`✅ ${sm.totalUrls} URLs trouvées`, 'success');
+  } catch (err) {
+    $('#results').innerHTML = `<div class="errors-box">Erreur : ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+async function scanFull() {
+  const url = $('#fullUrl').value.trim();
+  const maxUrls = parseInt($('#fullMaxUrls').value, 10);
+  const concurrency = parseInt($('#fullConcurrency').value, 10);
+  const useBrowser = $('#fullUseBrowser').value === 'true';
+  const includeRSS = $('#fullIncludeRSS').checked;
+
+  if (!url) return toast('URL manquante', 'error');
+
+  if (!confirm(`Scan complet de ${url}\n\nMaximum ${maxUrls} pages\nConcurrence : ${concurrency}\n\nCela peut prendre plusieurs minutes.`)) return;
+
+  $('#btnScanFull').disabled = true;
+  $('#btnDetectSitemap').disabled = true;
+  $('#results').innerHTML = `
+    <div class="loader">
+      <div class="spinner"></div>
+      <p>🕷️ Scan complet en cours…</p>
+      <p style="font-size: 0.82rem; margin-top: 8px; color: #94a3b8;">
+        Recherche du sitemap, puis scan de ${maxUrls} pages max…
+      </p>
+      <p style="font-size: 0.78rem; margin-top: 6px; color: #94a3b8;">
+        Cela peut prendre 2 à 10 minutes.
+      </p>
+    </div>`;
+  $('#resultsInfo').textContent = 'Scan complet en cours…';
+  $('#filtersWrapper').style.display = 'none';
+
+  try {
+    const res = await fetch('/api/scan-full', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, maxUrls, concurrency, useBrowser, includeRSS })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+
+    state.allLinks = data.links;
+    state.stats = data.stats;
+    state.pages = data.pages;
+    state.errors = data.errors;
+    state.currentFilter = 'all';
+    state.currentPage = 1;
+
+    $('#statFullUrls').textContent = data.stats.sitemapUsed || 0;
+    $('#statFullScanned').textContent = data.stats.pages;
+    $('#statFullLinks').textContent = data.stats.total;
+    $('#statFullErrors').textContent = data.stats.errors;
+
+    updateStats(data.stats);
+    applyFilters();
+    $('#filtersWrapper').style.display = 'block';
+
+    const dur = (data.stats.durationMs / 1000).toFixed(1);
+    toast(`✅ Scan complet terminé : ${data.stats.total} liens en ${dur}s`, 'success');
+  } catch (e) {
+    console.error(e);
+    $('#results').innerHTML = `
+      <div class="loader">
+        <p style="color: var(--rouge); font-weight: 600;">Erreur : ${escapeHtml(e.message)}</p>
+      </div>`;
+    toast(e.message, 'error');
+  } finally {
+    $('#btnScanFull').disabled = false;
+    $('#btnDetectSitemap').disabled = false;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  CATALOGUE D'APIs
+// ═══════════════════════════════════════════════════════════
+
+async function loadCatalog() {
+  $('#results').innerHTML = '<div class="loader"><div class="spinner"></div><p>Chargement du catalogue…</p></div>';
+
+  try {
+    const res = await fetch('/api/apis-catalog');
+    const data = await res.json();
+
+    const categoryIcons = {
+      'Entreprises': '🏢',
+      'Adresses': '📍',
+      'Justice': '⚖️',
+      'Éducation': '🎓',
+      'Environnement': '🌿',
+      'Transport': '🚆',
+      'Économie': '💰',
+      'Santé': '🏥',
+      'Administration': '🏛️',
+      'Culture': '🎭',
+      'Open Data': '📊'
+    };
+
+    const grouped = {};
+    data.apis.forEach(api => {
+      if (!grouped[api.category]) grouped[api.category] = [];
+      grouped[api.category].push(api);
+    });
+
+    let html = `
+      <div class="diag-box">
+        <strong>🇫🇷 Catalogue des APIs publiques françaises</strong>
+        <p style="font-size: 0.85rem; margin-top: 8px;">
+          <strong>${data.stats.total}</strong> APIs référencées dans
+          <strong>${Object.keys(data.stats.byCategory).length}</strong> catégories
+        </p>
+      </div>
+    `;
+
+    for (const [category, apis] of Object.entries(grouped)) {
+      html += `
+        <div class="diag-box" style="margin-top: 16px;">
+          <strong>${categoryIcons[category] || '📌'} ${escapeHtml(category)} (${apis.length})</strong>
+          <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 10px;">
+            ${apis.map(api => `
+              <details style="background: white; padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
+                <summary style="cursor: pointer; font-weight: 600; color: var(--bleu-fonce); font-size: 0.9rem;">
+                  ${escapeHtml(api.name)}
+                  <span class="badge badge-${api.auth === 'public' ? 'internal' : 'pdf'}" style="font-size: 0.65rem; margin-left: 8px;">
+                    ${api.auth === 'public' ? '✅ Public' : '🔐 ' + api.auth}
+                  </span>
+                </summary>
+                <div style="margin-top: 10px; font-size: 0.82rem;">
+                  <p style="color: var(--gray); margin-bottom: 8px;">${escapeHtml(api.description)}</p>
+                  <p><strong>Base URL</strong> : <code>${escapeHtml(api.baseUrl)}</code></p>
+                  ${api.docsUrl ? `<p><strong>Docs</strong> : <a href="${escapeHtml(api.docsUrl)}" target="_blank">${escapeHtml(api.docsUrl)}</a></p>` : ''}
+                  ${api.note ? `<p style="color: var(--warning);"><strong>⚠️</strong> ${escapeHtml(api.note)}</p>` : ''}
+                  <p style="margin-top: 8px;"><strong>Exemples :</strong></p>
+                  <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;">
+                    ${api.examples.map(ex => `
+                      <button class="filter-btn" style="font-size: 0.72rem;"
+                              onclick="testApi('${escapeHtml(ex.url)}')">
+                        <i class="fas fa-flask"></i> ${escapeHtml(ex.label)}
+                      </button>
+                    `).join('')}
+                  </div>
+                </div>
+              </details>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    $('#results').innerHTML = html;
+    toast(`📚 ${data.stats.total} APIs chargées`, 'success');
+  } catch (err) {
+    $('#results').innerHTML = `<div class="errors-box">Erreur : ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  PROBE API
+// ═══════════════════════════════════════════════════════════
+
+async function probeAPI() {
+  const url = $('#apiUrl').value.trim();
+  const method = $('#apiMethod').value;
+  const headersText = $('#apiHeaders').value.trim();
+  const bodyText = $('#apiBody').value.trim();
+  const insecure = $('#apiInsecure').checked;
+
+  if (!url) return toast('URL manquante', 'error');
+
+  let headers = {};
+  try { headers = headersText ? JSON.parse(headersText) : {}; }
+  catch { return toast('Headers JSON invalide', 'error'); }
+
+  let body = null;
+  if (bodyText) {
+    try { body = JSON.parse(bodyText); }
+    catch { return toast('Body JSON invalide', 'error'); }
+  }
+
+  $('#results').innerHTML = '<div class="loader"><div class="spinner"></div><p>Test en cours…</p></div>';
+
+  try {
+    const res = await fetch('/api/probe-rest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, method, headers, body, insecure })
+    });
+
+    const data = await res.json();
+    renderAPIResult(data);
+  } catch (err) {
+    $('#results').innerHTML = `<div class="errors-box">Erreur : ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+function renderAPIResult(data) {
+  if (!data.success) {
+    const checksHtml = data.checks ? `
+      <p style="margin-top: 10px; font-weight: 600;">🔍 Commandes de diagnostic :</p>
+      <ul style="margin-top: 6px; font-size: 0.78rem;">
+        ${data.checks.map(c => `<li><strong>${escapeHtml(c.label)}</strong><br><code>${escapeHtml(c.cmd)}</code></li>`).join('')}
+      </ul>
+    ` : '';
+
+    $('#results').innerHTML = `
+      <div class="errors-box">
+        <strong>❌ Échec — ${escapeHtml(data.errorType || 'inconnu')}</strong>
+        <p style="margin-top: 8px;">${escapeHtml(data.error)}</p>
+        ${data.hint ? `<p style="margin-top: 8px; font-style: italic;">💡 ${escapeHtml(data.hint)}</p>` : ''}
+        ${checksHtml}
+        <p style="margin-top: 8px; font-size: 0.78rem;">Durée : ${data.durationMs} ms</p>
+      </div>`;
+    return;
+  }
+
+  const sec = data.security;
+  const statusColor = data.status < 300 ? 'var(--success)'
+                    : data.status < 400 ? 'var(--warning)'
+                    : 'var(--rouge)';
+
+  $('#results').innerHTML = `
+    <div class="diag-box">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <strong>✅ Réponse reçue</strong>
+        <div>
+          <span style="background: ${statusColor}; color: white; padding: 4px 12px; border-radius: 20px; font-weight: 700; font-size: 0.82rem;">
+            ${data.status} ${escapeHtml(data.statusText)}
+          </span>
+          <span style="margin-left: 10px; font-size: 0.78rem; color: var(--gray);">
+            ${data.durationMs} ms • ${(data.size / 1024).toFixed(1)} Ko
+          </span>
+        </div>
+      </div>
+
+      <h4 style="margin-top: 16px; color: var(--bleu-fonce); font-size: 0.88rem;">🔍 Sécurité</h4>
+      <ul style="margin-top: 8px; font-size: 0.8rem;">
+        <li>HSTS : ${sec.hsts ? '✅' : '❌'}</li>
+        <li>CSP : ${sec.csp ? '✅' : '❌'}</li>
+        <li>CORS : <code>${escapeHtml(sec.cors || 'non')}</code></li>
+        <li>Auth requise : ${sec.needsAuth ? '🔐 OUI (401)' : '🔓 non'}</li>
+        <li>Interdit : ${sec.forbidden ? '🚫 OUI (403)' : 'non'}</li>
+        <li>Server : <code>${escapeHtml(sec.server || '?')}</code></li>
+      </ul>
+
+      ${data.isJSON ? `
+        <h4 style="margin-top: 16px; color: var(--bleu-fonce); font-size: 0.88rem;">📊 Structure JSON</h4>
+        <p style="font-size: 0.82rem;">Type : <strong>${data.json.type}</strong>${data.json.length ? ` — ${data.json.length} élément(s)` : ''}</p>
+        ${data.json.keys ? `<p style="font-size: 0.82rem;">Clés : <code>${data.json.keys.join(', ')}</code></p>` : ''}
+        <pre class="json-preview" style="margin-top: 10px;">${escapeHtml(data.json.sample)}</pre>
+      ` : `
+        <h4 style="margin-top: 16px; color: var(--bleu-fonce); font-size: 0.88rem;">📄 Réponse brute</h4>
+        <pre class="json-preview" style="margin-top: 10px;">${escapeHtml(data.preview)}</pre>
+      `}
+
+      <h4 style="margin-top: 16px; color: var(--bleu-fonce); font-size: 0.88rem;">📋 Headers</h4>
+      <pre class="json-preview">${escapeHtml(JSON.stringify(data.headers, null, 2))}</pre>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SWAGGER
+// ═══════════════════════════════════════════════════════════
+
+async function analyzeSwagger() {
+  const url = $('#swaggerUrl').value.trim();
+  if (!url) return toast('URL Swagger manquante', 'error');
+
+  $('#results').innerHTML = '<div class="loader"><div class="spinner"></div><p>Analyse de la doc…</p></div>';
+
+  try {
+    const res = await fetch('/api/analyze-swagger', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url })
+    });
+
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+    renderSwaggerDoc(data);
+    toast(`📚 ${data.endpointsCount} endpoint(s) dans la doc`, 'success');
+  } catch (err) {
+    $('#results').innerHTML = `<div class="errors-box">Erreur : ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+function renderSwaggerDoc(data) {
+  $('#results').innerHTML = `
+    <div class="diag-box">
+      <h3 style="color: var(--bleu-fonce);">${escapeHtml(data.info.title || 'API')}
+        <span style="color: var(--gray); font-weight: 400;">${escapeHtml(data.info.version || '')}</span>
+      </h3>
+      <p style="font-size: 0.85rem; color: var(--gray); margin-top: 6px;">${escapeHtml(data.info.description || '')}</p>
+
+      <h4 style="margin-top: 18px; color: var(--bleu-fonce); font-size: 0.88rem;">🌐 Serveurs</h4>
+      <ul style="margin-top: 8px; font-size: 0.8rem;">
+        ${data.servers.map(s => `<li><code>${escapeHtml(s.url)}</code></li>`).join('')}
+      </ul>
+
+      <h4 style="margin-top: 18px; color: var(--bleu-fonce); font-size: 0.88rem;">🔐 Authentification</h4>
+      <ul style="margin-top: 8px; font-size: 0.8rem;">
+        ${data.authSchemes.map(a => `
+          <li>
+            <strong>${escapeHtml(a.name)}</strong> — type: <code>${escapeHtml(a.type)}</code>
+            ${a.scopes ? `<br>Scopes: <code>${Object.keys(a.scopes).join(', ')}</code>` : ''}
+          </li>
+        `).join('')}
+      </ul>
+
+      <h4 style="margin-top: 18px; color: var(--bleu-fonce); font-size: 0.88rem;">📡 Endpoints (${data.endpointsCount})</h4>
+      <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 10px;">
+        ${data.endpoints.map(ep => `
+          <details style="background: white; padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
+            <summary style="cursor: pointer; font-weight: 700; font-family: monospace; color: var(--bleu-fonce); font-size: 0.85rem;">
+              ${escapeHtml(ep.path)}
+            </summary>
+            <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 10px;">
+              ${ep.operations.map(op => `
+                <div style="padding: 10px; background: #f8fafc; border-radius: 6px; border-left: 3px solid var(--bleu);">
+                  <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <span class="method-badge method-${op.method}">${op.method}</span>
+                    <code style="font-size: 0.78rem; color: var(--bleu-fonce);">${escapeHtml(op.operationId || '')}</code>
+                    ${op.tags.map(t => `<span class="badge badge-doc" style="font-size: 0.62rem;">${escapeHtml(t)}</span>`).join('')}
+                  </div>
+                  ${op.summary ? `<p style="font-size: 0.8rem; margin-top: 6px; color: var(--gray);">${escapeHtml(op.summary)}</p>` : ''}
+                  ${op.parameters.length ? `
+                    <p style="font-size: 0.75rem; margin-top: 8px;"><strong>Paramètres :</strong></p>
+                    <ul style="font-size: 0.75rem; padding-left: 20px; color: var(--gray);">
+                      ${op.parameters.map(p => `<li><code>${escapeHtml(p.name || '?')}</code>${p.in ? ` (${p.in})` : ''}${p.required ? ' — <span style="color: var(--rouge);">requis</span>' : ''}</li>`).join('')}
+                    </ul>
+                  ` : ''}
+                  ${op.hasBody ? `<p style="font-size: 0.75rem; margin-top: 6px;"><strong>Body requis</strong> (JSON)</p>` : ''}
+                  ${op.authType ? `<p style="font-size: 0.72rem; margin-top: 6px; color: var(--gray);">🔐 ${escapeHtml(op.authType)}</p>` : ''}
+                  ${op.throttling ? `<p style="font-size: 0.72rem; margin-top: 4px; color: var(--gray);">⚡ ${escapeHtml(op.throttling)}</p>` : ''}
+                </div>
+              `).join('')}
+            </div>
+          </details>
+        `).join('')}
+      </div>
+
+      <h4 style="margin-top: 18px; color: var(--bleu-fonce); font-size: 0.88rem;">📦 Schémas (${data.schemasCount})</h4>
+      <div style="margin-top: 10px; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px;">
+        ${data.schemas.map(s => `
+          <div style="background: white; padding: 10px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.75rem;">
+            <strong style="color: var(--bleu-fonce); font-family: monospace;">${escapeHtml(s.name)}</strong>
+            <div style="color: var(--gray); margin-top: 4px;">${s.properties.length} propriétés</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  FICOBA
+// ═══════════════════════════════════════════════════════════
+
+async function loadFicoba() {
+  const url = 'https://raw.githubusercontent.com/betagouv/api_gouv_swaggers/refs/heads/main/swaggers/api-ficoba3.json';
+
+  $('#swaggerUrl').value = url;
+  $('#results').innerHTML = '<div class="loader"><div class="spinner"></div><p>Chargement de FICOBA…</p></div>';
+
+  try {
+    const res = await fetch('/api/analyze-swagger', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url })
+    });
+
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+    renderSwaggerDoc(data);
+
+    const warning = document.createElement('div');
+    warning.className = 'errors-box';
+    warning.style.cssText = 'margin-top: 20px; background: #fff7ed; border-left-color: var(--warning);';
+    warning.innerHTML = `
+      <strong style="color: #b45309;">⚠️ API FICOBA — Accès restreint</strong>
+      <p style="margin-top: 6px; font-size: 0.82rem; color: #92400e;">
+        Cette API est réservée aux <strong>partenaires habilités</strong> (DGFiP, administrations, établissements bancaires).
+        Tout accès non autorisé est sanctionné par <strong>l'article 323-1 du Code pénal</strong>.
+      </p>
+      <p style="margin-top: 8px; font-size: 0.78rem; color: #92400e;">
+        📖 <strong>Info :</strong> l'URL <code>IP-GATEWAY</code> dans la doc est un placeholder — le vrai serveur
+        est accessible uniquement via VPN et convention.
+      </p>
+    `;
+    $('#results').appendChild(warning);
+
+    toast(`📚 FICOBA v2 — ${data.endpointsCount} endpoints`, 'success');
+  } catch (err) {
+    $('#results').innerHTML = `<div class="errors-box">Erreur : ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+async function testApi(url) {
+  $('#apiUrl').value = url;
+  $('#apiMethod').value = 'GET';
+  $('#apiHeaders').value = '{}';
+  $('#apiBody').value = '';
+
+  $$('#sideTabs .tab').forEach(t => t.classList.remove('active'));
+  document.querySelector('[data-mode="api"]').classList.add('active');
+  $('#modeScan').style.display = 'none';
+  $('#modeFull').style.display = 'none';
+  $('#modeApi').style.display = 'block';
+  $('#contentTitle').innerHTML = '<i class="fas fa-plug" style="color: var(--rouge);"></i> Résultats API';
+
+  await probeAPI();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  MODALE
+// ═══════════════════════════════════════════════════════════
+
+function showModal(title, message) {
+  const modal = document.createElement('div');
+  modal.id = 'globalModal';
+  modal.style.cssText = `
+    position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+    z-index: 2000; display: flex; align-items: center; justify-content: center;
+  `;
+  modal.innerHTML = `
+    <div style="background: white; padding: 40px; border-radius: 16px; text-align: center; max-width: 400px;">
+      <div class="spinner" style="margin-bottom: 20px;"></div>
+      <h3 style="color: var(--bleu-fonce); margin-bottom: 10px;">${escapeHtml(title)}</h3>
+      <p style="color: var(--gray); font-size: 0.9rem;">${escapeHtml(message)}</p>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+function hideModal() {
+  const modal = document.getElementById('globalModal');
+  if (modal) modal.remove();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  EXPORTS
+// ═══════════════════════════════════════════════════════════
+
+function exportCSV() {
+  if (!state.filteredLinks.length) return toast('Rien à exporter', 'error');
+  const rows = [['URL', 'Titre', 'Type', 'Ressource', 'Source', 'Pertinence', 'Scanné le']];
+  state.filteredLinks.forEach(l => {
+    rows.push([l.url, l.title, l.type, l.resourceType, l.source, l.relevance, l.scannedAt]);
+  });
+  const csv = '\uFEFF' + rows.map(r =>
+    r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')
+  ).join('\n');
+  download(csv, `scan_${new Date().toISOString().split('T')[0]}.csv`, 'text/csv;charset=utf-8');
+}
+
+function exportJSON() {
+  if (!state.filteredLinks.length) return toast('Rien à exporter', 'error');
+  const json = JSON.stringify({
+    scannedAt: new Date().toISOString(),
+    stats: state.stats,
+    links: state.filteredLinks
+  }, null, 2);
+  download(json, `scan_${new Date().toISOString().split('T')[0]}.json`, 'application/json');
+}
+
+function download(content, filename, mime) {
+  const blob = new Blob([content], { type: mime });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast(`Export réussi : ${filename}`, 'success');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  EVENTS
+// ═══════════════════════════════════════════════════════════
+
+$('#btnScan').addEventListener('click', () => scan(false));
+$('#btnForceScan').addEventListener('click', () => scan(true));
+$('#btnExtractAll').addEventListener('click', extractAll);
+$('#btnDetectApis').addEventListener('click', detectApis);
+$('#btnScanFull').addEventListener('click', scanFull);
+$('#btnDetectSitemap').addEventListener('click', detectSitemap);
+
+$$('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    $$('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.currentFilter = btn.dataset.filter;
+    applyFilters();
+  });
+});
+
+$('#filterSearch').addEventListener('input', (e) => {
+  state.currentSearch = e.target.value;
+  applyFilters();
+});
+
+document.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+    e.preventDefault();
+    exportCSV();
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'j') {
+    e.preventDefault();
+    exportJSON();
+  }
+});
+
+// ═══════════════════════════════════════════════════════════
+//  EXPOSITION GLOBALE
+// ═══════════════════════════════════════════════════════════
+
+window.goToPage = goToPage;
+window.probeAPI = probeAPI;
+window.analyzeSwagger = analyzeSwagger;
+window.loadFicoba = loadFicoba;
+window.loadCatalog = loadCatalog;
+window.testApi = testApi;
+window.exportCSV = exportCSV;
+window.exportJSON = exportJSON;
+window.detectSitemap = detectSitemap;
+window.scanFull = scanFull;
+</script>
+
+</body>
+</html>

@@ -1,0 +1,32 @@
+{
+  "name": "scanner",
+  "version": "3.1.0",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "cheerio": "1.0.0",
+    "cors": "2.8.5",
+    "csv-parse": "5.6.0",
+    "exceljs": "4.4.0",
+    "express": "4.21.2",
+    "pdfjs-dist": "4.7.76",
+    "puppeteer": "25.12.0",
+    "undici": "8.11.2"
+  },
+  "overrides": {
+    "basic-ftp": "^6.2.1",
+    "get-uri": "^8.0.1",
+    "body-parser": "^1.20.6",
+    "extract-zip": "^2.0.1",
+    "path-to-regexp": "^0.1.13",
+    "qs": "^6.13.1",
+    "tar": "^7.5.21",
+    "uuid": "^11.1.1",
+    "ws": "^8.18.0",
+    "canvas": "npm:noop2@1.0.0"
+  }
+}
