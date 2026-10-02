@@ -4,7 +4,7 @@
 [![Express](https://img.shields.io/badge/Express-4.21-000000?logo=express&logoColor=white)](https://expressjs.com/)
 [![Puppeteer](https://img.shields.io/badge/Puppeteer-25.12-40B5A4?logo=puppeteer&logoColor=white)](https://pptr.dev/)
 [![undici](https://img.shields.io/badge/undici-8.11-FF6B35)](https://undici.nodejs.org/)
-[![Version](https://img.shields.io/badge/version-4.0.0-blue)](package.json)
+[![Version](https://img.shields.io/badge/version-4.1.0-blue)](package.json)
 [![License](https://img.shields.io/badge/license-usage%20personnel-blue)](#-licence)
 [![Tests](https://img.shields.io/badge/tests-node%3Atest-green)](test/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)](#-contribuer)
@@ -23,6 +23,7 @@ Outil d'analyse technique de sites web : extraction de liens, détection d'APIs,
 - [Installation](#-installation)
 - [Architecture](#️-architecture)
 - [API](#-api)
+- [Open Data](#-open-data)
 - [Sécurité](#-sécurité)
 - [Cadre légal](#️-cadre-légal)
 - [Stack technique](#️-stack-technique)
@@ -40,8 +41,10 @@ Outil d'analyse technique de sites web : extraction de liens, détection d'APIs,
 | 🕷️ **Scan complet** | Exploration via `sitemap.xml` et flux RSS, analyse en parallèle |
 | 🧠 **Détection de SPA** | Bascule automatique vers Puppeteer si le site nécessite JavaScript |
 | 📄 **Extraction de documents** | PDF (texte, URLs, emails), CSV, XLSX, JSON |
+| 🗄️ **Open Data** | Support udata, CKAN, OpenDataSoft, DCAT-AP |
 | 🔌 **Analyse d'APIs** | Test manuel ou en masse du catalogue d'APIs publiques françaises |
 | 📘 **Analyse Swagger/OpenAPI** | Endpoints, schémas, authentification |
+| 📤 **Export** | JSON, CSV, JSONL |
 | 🛡️ **Audit de sécurité** | HSTS, CSP, CORS, rate-limiting |
 
 ---
@@ -89,10 +92,12 @@ npm test
 scanner/
 ├── server.js           # Serveur Express + routes API
 ├── extractors.js       # Extraction PDF/JSON/CSV/XLSX, sitemap, RSS
+├── optimizations.js    # AdaptiveQueue, PoolManager, CkanDetector...
 ├── utils.js            # Helpers partagés (SSRF, JSON, erreurs)
 ├── apis-catalog.js     # Catalogue d'APIs publiques françaises
 ├── package.json        # Dépendances et scripts
 ├── LICENSE             # Licence du projet
+├── patch.sh → patch9.sh # Scripts de patch idempotents
 ├── test/
 │   └── utils.test.js   # Tests unitaires
 └── public/
@@ -139,6 +144,78 @@ Scan complet via sitemap + RSS.
 ```
 
 **Limites :** `maxUrls` ≤ 500, `concurrency` ≤ 10.
+
+---
+
+### `POST /api/scan-opendata`
+
+**Détection automatique** du portail open data et extraction via API native.
+
+**Body :**
+
+```json
+{
+  "url": "https://www.data.gouv.fr",
+  "maxDatasets": 100
+}
+```
+
+**Standards supportés :**
+
+| Standard | Portails | Exemple |
+|---|---|---|
+| **udata** | data.gouv.fr, Etalab | `https://www.data.gouv.fr` |
+| **CKAN** | govdata.de, data.gov.uk | `https://www.govdata.de` |
+| **OpenDataSoft** | opendata.paris.fr | `https://opendata.paris.fr` |
+| **DCAT-AP** | data.europa.eu | `https://data.europa.eu` |
+
+**Exemple de réponse :**
+
+```json
+{
+  "type": "udata",
+  "links": [...],
+  "fromApi": true,
+  "stats": {
+    "total": 251,
+    "durationMs": 4499,
+    "mode": "api"
+  }
+}
+```
+
+---
+
+### `POST /api/scan-news`
+
+Scan optimisé pour sites d'actualités (découverte + fetch parallèle).
+
+**Body :**
+
+```json
+{
+  "url": "https://www.lemonde.fr",
+  "maxArticles": 500,
+  "concurrency": 5
+}
+```
+
+---
+
+### `POST /api/scan-api-batch`
+
+Fetch parallèle d'une liste d'endpoints REST.
+
+**Body :**
+
+```json
+{
+  "endpoints": [
+    "https://api.github.com/repos/nodejs/node",
+    "https://api.github.com/repos/expressjs/express"
+  ]
+}
+```
 
 ---
 
@@ -189,9 +266,39 @@ Teste en masse les APIs du catalogue.
 
 ---
 
+### `POST /api/export`
+
+Exporte les résultats en JSON, CSV ou JSONL.
+
+**Body :**
+
+```json
+{
+  "links": [...],
+  "format": "csv",
+  "filename": "export"
+}
+```
+
+**Formats supportés :**
+
+| Format | Content-Type | Extension |
+|---|---|---|
+| `json` | `application/json` | `.json` |
+| `csv` | `text/csv` | `.csv` |
+| `jsonl` | `application/x-ndjson` | `.jsonl` |
+
+---
+
 ### `GET /api/apis-catalog`
 
 Retourne le catalogue complet des APIs publiques.
+
+---
+
+### `GET /api/pool/stats`
+
+Statistiques du pool de connexions undici.
 
 ---
 
@@ -203,13 +310,54 @@ Statut du serveur.
 {
   "status": "ok",
   "project": "scanner",
-  "version": "4.0.0",
-  "node": "v20.x.x",
+  "version": "4.1.0",
+  "node": "v22.x.x",
   "browser": true,
   "cacheSize": 0,
   "rateLimitEntries": 0
 }
 ```
+
+---
+
+## 🗄️ Open Data
+
+### Portails testés
+
+| Portail | Type | Datasets | Durée |
+|---|---|---|---|
+| `data.gouv.fr` | udata | **251** | 4,5s |
+| `govdata.de` | CKAN | **428** | 2,8s |
+| `opendata.paris.fr` | OpenDataSoft | **100** | 8s |
+| `data.europa.eu` | DCAT-AP | **100** | 5,5s |
+
+### Exemples
+
+```bash
+# France (udata)
+curl -X POST http://localhost:3001/api/scan-opendata \
+  -H "Content-Type: application/json" \
+  -d '{"url":"https://www.data.gouv.fr","maxDatasets":100}'
+
+# Allemagne (CKAN)
+curl -X POST http://localhost:3001/api/scan-opendata \
+  -H "Content-Type: application/json" \
+  -d '{"url":"https://www.govdata.de","maxDatasets":100}'
+
+# Paris (OpenDataSoft)
+curl -X POST http://localhost:3001/api/scan-opendata \
+  -H "Content-Type: application/json" \
+  -d '{"url":"https://opendata.paris.fr","maxDatasets":100}'
+
+# Union européenne (DCAT-AP)
+curl -X POST http://localhost:3001/api/scan-opendata \
+  -H "Content-Type: application/json" \
+  -d '{"url":"https://data.europa.eu","maxDatasets":100}'
+```
+
+### Interface web
+
+Ouvrez http://localhost:3001 et cliquez sur l'onglet **"Open Data"**.
 
 ---
 
@@ -238,6 +386,14 @@ Toutes les URLs sont validées avant d'être contactées :
 | URLs par scan complet | 500 |
 | Concurrence | 10 |
 | URLs par extraction | 50 |
+| Datasets par portail | 1000 |
+
+### Fix undici 8
+
+Le projet inclut deux correctifs pour undici 8.11.2 :
+
+1. **`Accept-Encoding: br`** retiré (bug de décodage Brotli)
+2. **Redirections gérées manuellement** (bug HTTP/2 → HTTP/2)
 
 ---
 
@@ -317,6 +473,7 @@ L'auteur décline toute responsabilité en cas d'utilisation abusive. Voir la se
 <p align="center">
   <sub>Fait avec ❤️ pour la communauté open source</sub>
 </p>
+
 
 ---
 
