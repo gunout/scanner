@@ -4,8 +4,9 @@
 [![Express](https://img.shields.io/badge/Express-4.21-000000?logo=express&logoColor=white)](https://expressjs.com/)
 [![Puppeteer](https://img.shields.io/badge/Puppeteer-25.12-40B5A4?logo=puppeteer&logoColor=white)](https://pptr.dev/)
 [![undici](https://img.shields.io/badge/undici-8.11-FF6B35)](https://undici.nodejs.org/)
+[![Version](https://img.shields.io/badge/version-4.0.0-blue)](package.json)
 [![License](https://img.shields.io/badge/license-usage%20personnel-blue)](#-licence)
-[![Tests](https://img.shields.io/badge/tests-node%3Atest-green)](tests/)
+[![Tests](https://img.shields.io/badge/tests-node%3Atest-green)](test/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)](#-contribuer)
 [![RGPD](https://img.shields.io/badge/RGPD-conforme-003399)](https://www.cnil.fr/fr/rgpd-de-quoi-parle-t-on)
 [![RGAA](https://img.shields.io/badge/RGAA-4.1%20AA-000091)](https://accessibilite.numerique.gouv.fr/)
@@ -55,7 +56,8 @@ Outil d'analyse technique de sites web : extraction de liens, détection d'APIs,
 ### Étapes
 
 ```bash
-# Cloner / télécharger le projet
+# Cloner le dépôt
+git clone https://github.com/gunout/scanner.git
 cd scanner
 
 # Installer les dépendances
@@ -89,7 +91,9 @@ scanner/
 ├── extractors.js       # Extraction PDF/JSON/CSV/XLSX, sitemap, RSS
 ├── utils.js            # Helpers partagés (SSRF, JSON, erreurs)
 ├── apis-catalog.js     # Catalogue d'APIs publiques françaises
-├── tests/
+├── package.json        # Dépendances et scripts
+├── LICENSE             # Licence du projet
+├── test/
 │   └── utils.test.js   # Tests unitaires
 └── public/
     └── index.html      # Interface web
