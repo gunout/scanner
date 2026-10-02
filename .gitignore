@@ -1,0 +1,40 @@
+# Dépendances
+node_modules/
+package-lock.json
+
+# Backups de patch
+.patch-backups/
+*.bak
+*.tmp
+*.orig
+
+# Logs
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# Environnement
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Cache
+.cache/
+dist/
+build/
+coverage/
+
+# Puppeteer
+.local-chromium/
+.chromium/

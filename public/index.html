@@ -1,0 +1,2316 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scanner Pro — Analyse de sites web</title>
+<meta name="description" content="Outil d'analyse technique : extraction de liens, détection d'APIs, audit de sécurité.">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  :root {
+    --couleur-primaire: #2c3e8f;
+    --couleur-primaire-hover: #1f2d6b;
+    --couleur-accent: #c0392b;
+    --couleur-accent-hover: #a32e22;
+
+    --gris-50: #f6f6f6;
+    --gris-100: #ededed;
+    --gris-200: #e3e3fd;
+    --gris-500: #929292;
+    --gris-700: #3a3a3a;
+    --gris-900: #1e1e1e;
+    --blanc: #ffffff;
+
+    --succes: #18753c;
+    --succes-bg: #b8fec9;
+    --info: #0063cb;
+    --info-bg: #e8edff;
+    --attention: #b34000;
+    --attention-bg: #ffe9e6;
+    --erreur: #ce0500;
+    --erreur-bg: #ffdedd;
+
+    --font-main: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.10);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font-main);
+    font-size: 16px;
+    line-height: 1.5;
+    color: var(--gris-900);
+    background: var(--blanc);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: var(--couleur-primaire);
+    color: white;
+    padding: 8px 16px;
+    text-decoration: none;
+    z-index: 9999;
+    font-weight: 700;
+  }
+  .skip-link:focus { top: 0; }
+
+  .header-principal {
+    background: linear-gradient(135deg, var(--couleur-primaire) 0%, #1f2d6b 100%);
+    color: white;
+    padding: 32px 16px;
+    position: relative;
+  }
+
+  .header-principal-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .header-principal h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 4px;
+  }
+
+  .header-principal h1 .badge-officiel {
+    background: white;
+    color: var(--couleur-primaire);
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 3px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .header-principal p {
+    font-size: 0.95rem;
+    opacity: 0.92;
+    max-width: 640px;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .btn-header {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 10px 18px;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-header:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: white;
+  }
+
+  .conteneur {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 16px;
+    width: 100%;
+    flex: 1;
+  }
+
+  .grille-principale {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 32px;
+  }
+
+  @media (max-width: 1024px) {
+    .grille-principale { grid-template-columns: 1fr; gap: 24px; }
+  }
+
+  .colonne-laterale {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .carte {
+    background: white;
+    border: 1px solid var(--gris-200);
+    border-radius: 6px;
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .carte-titre {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--couleur-primaire);
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--gris-100);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .carte-titre i { color: var(--couleur-accent); font-size: 1.1rem; }
+
+  .champ-groupe { margin-bottom: 16px; }
+
+  .champ-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--gris-900);
+    margin-bottom: 6px;
+  }
+
+  .champ-label .obligatoire { color: var(--erreur); margin-left: 2px; }
+
+  .champ-input, .champ-select, .champ-textarea {
+    width: 100%;
+    padding: 10px 12px;
+    font-family: var(--font-main);
+    font-size: 1rem;
+    color: var(--gris-900);
+    background: white;
+    border: 1px solid var(--gris-500);
+    border-radius: 4px;
+    transition: all 0.2s;
+  }
+
+  .champ-input:focus, .champ-select:focus, .champ-textarea:focus {
+    outline: none;
+    border-color: var(--couleur-primaire);
+    box-shadow: 0 0 0 2px rgba(44, 62, 143, 0.15);
+  }
+
+  .champ-textarea {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    resize: vertical;
+    min-height: 70px;
+  }
+
+  .champ-aide {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--gris-500);
+    margin-top: 4px;
+  }
+
+  .champ-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    font-size: 0.875rem;
+  }
+
+  .champ-checkbox input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--couleur-primaire);
+    cursor: pointer;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 20px;
+    font-family: var(--font-main);
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    line-height: 1.4;
+    width: 100%;
+  }
+
+  .btn-primaire { background: var(--couleur-primaire); color: white; }
+  .btn-primaire:hover:not(:disabled) { background: var(--couleur-primaire-hover); }
+
+  .btn-secondaire {
+    background: white;
+    color: var(--couleur-primaire);
+    border: 1px solid var(--couleur-primaire);
+  }
+
+  .btn-secondaire:hover:not(:disabled) { background: var(--gris-50); }
+
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .btn-group { display: flex; flex-direction: column; gap: 8px; }
+
+  .stats-grille {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .stat-carte {
+    background: var(--gris-50);
+    border-radius: 4px;
+    padding: 12px 8px;
+    text-align: center;
+    border-left: 3px solid var(--couleur-primaire);
+  }
+
+  .stat-valeur {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--couleur-primaire);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stat-libelle {
+    font-size: 0.7rem;
+    color: var(--gris-700);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    font-weight: 600;
+    margin-top: 6px;
+  }
+
+  .colonne-principale {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    min-width: 0;
+  }
+
+  .onglets {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid var(--gris-200);
+    overflow-x: auto;
+  }
+
+  .onglet {
+    padding: 12px 24px;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    font-family: var(--font-main);
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--gris-700);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+  }
+
+  .onglet:hover {
+    color: var(--couleur-primaire);
+    background: var(--gris-50);
+  }
+
+  .onglet.actif {
+    color: var(--couleur-primaire);
+    border-bottom-color: var(--couleur-primaire);
+  }
+
+  .panneau {
+    background: white;
+    border: 1px solid var(--gris-200);
+    border-radius: 6px;
+    padding: 24px;
+    min-height: 400px;
+  }
+
+  .panneau-entete {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--gris-100);
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .panneau-titre {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--couleur-primaire);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .info-resultat {
+    font-size: 0.85rem;
+    color: var(--gris-700);
+    background: var(--gris-50);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-weight: 600;
+  }
+
+  .tableau-wrapper {
+    overflow-x: auto;
+    border: 1px solid var(--gris-200);
+    border-radius: 4px;
+    margin-top: 16px;
+  }
+
+  table.tableau {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    background: white;
+  }
+
+  .tableau thead {
+    background: var(--couleur-primaire);
+    color: white;
+  }
+
+  .tableau th {
+    padding: 12px 14px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  .tableau td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--gris-100);
+    vertical-align: middle;
+  }
+
+  .tableau tbody tr:hover { background: var(--gris-50); }
+  .tableau tbody tr:last-child td { border-bottom: none; }
+
+  .cellule-url {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--couleur-primaire);
+    word-break: break-all;
+    max-width: 450px;
+    line-height: 1.4;
+  }
+
+  .cellule-url a { color: inherit; text-decoration: none; }
+  .cellule-url a:hover { text-decoration: underline; }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 3px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .badge-interne { background: var(--info-bg); color: var(--info); }
+  .badge-externe { background: var(--gris-100); color: var(--gris-700); }
+  .badge-pdf { background: var(--erreur-bg); color: var(--erreur); }
+  .badge-image { background: var(--attention-bg); color: var(--attention); }
+  .badge-doc { background: var(--succes-bg); color: var(--succes); }
+
+  .pertinence { display: flex; align-items: center; gap: 8px; }
+
+  .pertinence-barre {
+    width: 60px;
+    height: 6px;
+    background: var(--gris-100);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .pertinence-remplissage {
+    height: 100%;
+    background: linear-gradient(90deg, var(--couleur-primaire), var(--couleur-accent));
+  }
+
+  .pertinence-valeur {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--gris-700);
+    min-width: 32px;
+  }
+
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 24px;
+    padding: 16px 0;
+  }
+
+  .pagination button {
+    min-width: 40px;
+    height: 40px;
+    padding: 0 12px;
+    background: white;
+    border: 1px solid var(--gris-500);
+    border-radius: 4px;
+    font-family: var(--font-main);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--gris-900);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .pagination button:hover:not(:disabled) {
+    background: var(--couleur-primaire);
+    border-color: var(--couleur-primaire);
+    color: white;
+  }
+
+  .pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .pagination-info {
+    font-size: 0.875rem;
+    color: var(--gris-700);
+    font-weight: 600;
+    padding: 0 12px;
+  }
+
+  .chargement {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--gris-500);
+  }
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto 16px;
+    border: 3px solid var(--gris-100);
+    border-top-color: var(--couleur-primaire);
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+  }
+
+  @keyframes spin { 100% { transform: rotate(360deg); } }
+
+  .alerte {
+    padding: 14px 16px;
+    border-radius: 4px;
+    margin-top: 16px;
+    font-size: 0.875rem;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .alerte i { font-size: 1.1rem; margin-top: 1px; }
+
+  .alerte-erreur { background: var(--erreur-bg); border-left: 4px solid var(--erreur); color: #5f0000; }
+  .alerte-info { background: var(--info-bg); border-left: 4px solid var(--info); color: #002a5e; }
+  .alerte-succes { background: var(--succes-bg); border-left: 4px solid var(--succes); color: #0f3d20; }
+  .alerte-attention { background: var(--attention-bg); border-left: 4px solid var(--attention); color: #5a2000; }
+
+  .notifications {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 380px;
+  }
+
+  .notification {
+    background: white;
+    padding: 14px 18px;
+    border-radius: 4px;
+    border-left: 4px solid var(--couleur-primaire);
+    box-shadow: var(--shadow-lg);
+    font-size: 0.875rem;
+    font-weight: 500;
+    animation: slideIn 0.3s ease;
+  }
+
+  .notification.succes { border-left-color: var(--succes); }
+  .notification.erreur { border-left-color: var(--erreur); }
+  .notification.attention { border-left-color: var(--attention); }
+
+  @keyframes slideIn {
+    from { transform: translateX(120%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+
+  .footer-etat {
+    background: var(--gris-50);
+    border-top: 1px solid var(--gris-200);
+    padding: 40px 16px 24px;
+    margin-top: auto;
+  }
+
+  .footer-inner { max-width: 1200px; margin: 0 auto; }
+
+  .footer-grille {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 32px;
+    margin-bottom: 32px;
+  }
+
+  .footer-colonne h3 {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--gris-900);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .footer-colonne ul { list-style: none; }
+  .footer-colonne li { margin-bottom: 8px; }
+
+  .footer-colonne a {
+    color: var(--gris-700);
+    text-decoration: none;
+    font-size: 0.85rem;
+    transition: color 0.2s;
+  }
+
+  .footer-colonne a:hover { color: var(--couleur-primaire); text-decoration: underline; }
+
+  .footer-bas {
+    padding-top: 24px;
+    border-top: 1px solid var(--gris-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .footer-bas-gauche {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.85rem;
+    color: var(--gris-700);
+  }
+
+  .bandeau-info {
+    background: var(--info-bg);
+    border-left: 4px solid var(--info);
+    padding: 12px 16px;
+    font-size: 0.875rem;
+    color: #002a5e;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    border-radius: 4px;
+  }
+
+  .bandeau-info i { color: var(--info); font-size: 1.1rem; }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+  }
+
+  *:focus-visible {
+    outline: 2px solid var(--couleur-primaire);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 768px) {
+    .header-principal h1 { font-size: 1.35rem; }
+    .header-principal-inner { flex-direction: column; align-items: flex-start; }
+    .header-actions { width: 100%; }
+    .btn-header { flex: 1; justify-content: center; }
+    .notifications { left: 16px; right: 16px; max-width: none; }
+  }
+</style>
+</head>
+<body>
+
+<a href="#contenu-principal" class="skip-link">Aller au contenu principal</a>
+
+<header class="header-principal">
+  <div class="header-principal-inner">
+    <div>
+      <h1>
+        <i class="fas fa-shield-halved" aria-hidden="true"></i>
+        Scanner Pro
+        <span class="badge-officiel">Bêta</span>
+      </h1>
+      <p>
+        Outil d'analyse technique : extraction de liens, détection d'APIs
+        et audit de sécurité. À utiliser uniquement sur des sites que vous
+        êtes autorisé à analyser.
+      </p>
+    </div>
+    <div class="header-actions">
+      <a href="#documentation" class="btn-header">
+        <i class="fas fa-book"></i> Documentation
+      </a>
+      <a href="#accessibilite" class="btn-header">
+        <i class="fas fa-universal-access"></i> Accessibilité
+      </a>
+    </div>
+  </div>
+</header>
+
+<main class="conteneur" id="contenu-principal">
+
+  <div class="bandeau-info" role="status">
+    <i class="fas fa-circle-info" aria-hidden="true"></i>
+    <div>
+      <strong>Usage légal uniquement.</strong>
+      Cet outil doit être utilisé sur des sites que vous êtes autorisé à analyser.
+      Les scans non autorisés peuvent constituer une infraction pénale.
+    </div>
+  </div>
+
+  <div class="grille-principale">
+
+    <aside class="colonne-laterale" aria-label="Configuration du scan">
+
+      <section class="carte">
+        <h2 class="carte-titre">
+          <i class="fas fa-crosshairs" aria-hidden="true"></i>
+          Cible du scan
+        </h2>
+
+        <div class="champ-groupe">
+          <label for="targetUrl" class="champ-label">
+            URL à analyser <span class="obligatoire" aria-label="obligatoire">*</span>
+          </label>
+          <input type="url" id="targetUrl" class="champ-input"
+                 value="https://www.data.gouv.fr/fr/"
+                 placeholder="https://exemple.fr" required
+                 aria-describedby="targetUrl-aide">
+          <span id="targetUrl-aide" class="champ-aide">
+            Adresse complète du site à analyser
+          </span>
+        </div>
+
+        <div class="champ-groupe">
+          <label for="depth" class="champ-label">Profondeur d'analyse</label>
+          <select id="depth" class="champ-select">
+            <option value="0">Page principale uniquement</option>
+            <option value="1" selected>Page + sous-pages directes</option>
+            <option value="2">Page + sous-pages + sous-sous-pages</option>
+            <option value="3">Profondeur maximale</option>
+          </select>
+        </div>
+
+        <div class="champ-groupe">
+          <label for="maxPages" class="champ-label">Nombre maximum de pages</label>
+          <select id="maxPages" class="champ-select">
+            <option value="1">1 page</option>
+            <option value="5" selected>5 pages</option>
+            <option value="10">10 pages</option>
+            <option value="20">20 pages</option>
+            <option value="50">50 pages</option>
+            <option value="100">100 pages</option>
+          </select>
+        </div>
+
+        <div class="champ-groupe">
+          <label for="useBrowser" class="champ-label">Mode d'analyse</label>
+          <select id="useBrowser" class="champ-select">
+            <option value="true" selected>Automatique (recommandé)</option>
+            <option value="false">Rapide (HTML uniquement)</option>
+          </select>
+        </div>
+
+        <div class="btn-group">
+          <button id="btnScan" class="btn btn-primaire">
+            <i class="fas fa-play" aria-hidden="true"></i>
+            Lancer le scan
+          </button>
+          <button id="btnForceScan" class="btn btn-secondaire">
+            <i class="fas fa-rotate" aria-hidden="true"></i>
+            Forcer (ignorer le cache)
+          </button>
+          <button id="btnExtractAll" class="btn btn-secondaire">
+            <i class="fas fa-file-arrow-down" aria-hidden="true"></i>
+            Extraire les documents
+          </button>
+          <button id="btnDetectApis" class="btn btn-secondaire">
+            <i class="fas fa-code" aria-hidden="true"></i>
+            Détecter les APIs
+          </button>
+          <button id="btnExport" class="btn btn-secondaire">
+            <i class="fas fa-download" aria-hidden="true"></i>
+            Exporter les résultats
+          </button>
+        </div>
+      </section>
+
+      <section class="carte" aria-label="Statistiques du scan">
+        <h2 class="carte-titre">
+          <i class="fas fa-chart-simple" aria-hidden="true"></i>
+          Statistiques
+        </h2>
+
+        <div class="stats-grille">
+          <div class="stat-carte">
+            <div class="stat-valeur" id="statTotal">0</div>
+            <div class="stat-libelle">Liens</div>
+          </div>
+          <div class="stat-carte">
+            <div class="stat-valeur" id="statPages">0</div>
+            <div class="stat-libelle">Pages</div>
+          </div>
+          <div class="stat-carte">
+            <div class="stat-valeur" id="statInternal">0</div>
+            <div class="stat-libelle">Internes</div>
+          </div>
+          <div class="stat-carte">
+            <div class="stat-valeur" id="statExternal">0</div>
+            <div class="stat-libelle">Externes</div>
+          </div>
+          <div class="stat-carte">
+            <div class="stat-valeur" id="statImages">0</div>
+            <div class="stat-libelle">Images</div>
+          </div>
+          <div class="stat-carte">
+            <div class="stat-valeur" id="statPdf">0</div>
+            <div class="stat-libelle">PDF</div>
+          </div>
+          <div class="stat-carte">
+            <div class="stat-valeur" id="statDocs">0</div>
+            <div class="stat-libelle">Documents</div>
+          </div>
+          <div class="stat-carte">
+            <div class="stat-valeur" id="statErrors">0</div>
+            <div class="stat-libelle">Erreurs</div>
+          </div>
+        </div>
+      </section>
+
+    </aside>
+
+    <section class="colonne-principale" aria-label="Résultats">
+
+      <nav class="onglets" role="tablist" aria-label="Sections du service">
+        <button class="onglet actif" data-mode="scan" role="tab" aria-selected="true" aria-controls="modeScan">
+          <i class="fas fa-satellite-dish" aria-hidden="true"></i>
+          Scan de page
+        </button>
+        <button class="onglet" data-mode="full" role="tab" aria-selected="false" aria-controls="modeFull">
+          <i class="fas fa-sitemap" aria-hidden="true"></i>
+          Scan complet
+        </button>
+        <button class="onglet" data-mode="api" role="tab" aria-selected="false" aria-controls="modeApi">
+          <i class="fas fa-plug" aria-hidden="true"></i>
+          Analyse d'APIs
+        </button>
+        <button class="onglet" data-mode="opendata" role="tab" aria-selected="false" aria-controls="modeOpenData">
+          <i class="fas fa-database" aria-hidden="true"></i>
+          Open Data
+        </button>
+      </nav>
+
+      <div id="modeScan" class="panneau" role="tabpanel">
+        <div class="panneau-entete">
+          <h2 class="panneau-titre">
+            <i class="fas fa-list" style="color: var(--couleur-accent);" aria-hidden="true"></i>
+            Résultats du scan
+          </h2>
+          <span class="info-resultat" id="resultsInfo">En attente…</span>
+        </div>
+
+        <div id="filtersWrapper" style="display: none;">
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;">
+            <button class="btn btn-secondaire filter-btn actif" data-filter="all" style="width:auto; padding:6px 14px; font-size:0.85rem;">Tout</button>
+            <button class="btn btn-secondaire filter-btn" data-filter="internal" style="width:auto; padding:6px 14px; font-size:0.85rem;">Internes</button>
+            <button class="btn btn-secondaire filter-btn" data-filter="external" style="width:auto; padding:6px 14px; font-size:0.85rem;">Externes</button>
+            <button class="btn btn-secondaire filter-btn" data-filter="image" style="width:auto; padding:6px 14px; font-size:0.85rem;">Images</button>
+            <button class="btn btn-secondaire filter-btn" data-filter="pdf" style="width:auto; padding:6px 14px; font-size:0.85rem;">PDF</button>
+            <button class="btn btn-secondaire filter-btn" data-filter="document" style="width:auto; padding:6px 14px; font-size:0.85rem;">Documents</button>
+            <input type="search" id="filterSearch" class="champ-input" placeholder="Rechercher…" style="flex: 1; min-width: 180px;">
+          </div>
+        </div>
+
+        <div id="results">
+          <div class="chargement">
+            <div class="spinner" role="status" aria-label="Chargement"></div>
+            <p>Prêt à analyser. Sélectionnez une cible puis cliquez sur « Lancer le scan ».</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="modeFull" class="panneau" role="tabpanel" style="display:none;">
+        <div class="panneau-entete">
+          <h2 class="panneau-titre">
+            <i class="fas fa-sitemap" style="color: var(--couleur-accent);" aria-hidden="true"></i>
+            Scan complet via sitemap
+          </h2>
+          <span class="info-resultat" id="fullInfo">En attente…</span>
+        </div>
+
+        <div class="carte" style="margin-bottom: 20px;">
+          <p style="font-size: 0.875rem; color: var(--gris-700); margin-bottom: 16px;">
+            Cette fonction analyse automatiquement le <code>sitemap.xml</code> et les flux RSS
+            d'un site pour découvrir l'ensemble de ses pages, puis les analyse en parallèle.
+          </p>
+
+          <div class="champ-groupe">
+            <label for="fullUrl" class="champ-label">URL du site</label>
+            <input type="url" id="fullUrl" class="champ-input" value="https://www.data.gouv.fr">
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="champ-groupe">
+              <label for="fullMaxUrls" class="champ-label">URLs max</label>
+              <select id="fullMaxUrls" class="champ-select">
+                <option value="20">20</option>
+                <option value="50" selected>50</option>
+                <option value="100">100</option>
+                <option value="200">200</option>
+                <option value="500">500</option>
+              </select>
+            </div>
+            <div class="champ-groupe">
+              <label for="fullConcurrency" class="champ-label">Parallélisme</label>
+              <select id="fullConcurrency" class="champ-select">
+                <option value="1">1 (lent, sûr)</option>
+                <option value="3" selected>3 (recommandé)</option>
+                <option value="5">5 (rapide)</option>
+                <option value="10">10 (agressif)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="champ-checkbox">
+            <input type="checkbox" id="fullIncludeRSS" checked>
+            <label for="fullIncludeRSS">Inclure les flux RSS</label>
+          </div>
+
+          <div class="btn-group">
+            <button id="btnScanFull" class="btn btn-primaire">
+              <i class="fas fa-play"></i> Lancer le scan complet
+            </button>
+            <button id="btnDetectSitemap" class="btn btn-secondaire">
+              <i class="fas fa-map"></i> Détecter le sitemap
+            </button>
+          </div>
+        </div>
+
+        <div class="stats-grille">
+          <div class="stat-carte">
+            <div class="stat-valeur" id="statFullUrls">0</div>
+            <div class="stat-libelle">URLs sitemap</div>
+          </div>
+          <div class="stat-carte">
+            <div class="stat-valeur" id="statFullScanned">0</div>
+            <div class="stat-libelle">Pages scannées</div>
+          </div>
+          <div class="stat-carte">
+            <div class="stat-valeur" id="statFullLinks">0</div>
+            <div class="stat-libelle">Liens</div>
+          </div>
+          <div class="stat-carte">
+            <div class="stat-valeur" id="statFullErrors">0</div>
+            <div class="stat-libelle">Erreurs</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="modeOpenData" class="panneau" role="tabpanel" style="display:none;">
+        <div class="panneau-entete">
+          <h2 class="panneau-titre">
+            <i class="fas fa-database" style="color: var(--couleur-accent);" aria-hidden="true"></i>
+            Portails Open Data
+          </h2>
+          <span class="info-resultat">4 standards supportés</span>
+        </div>
+
+        <div class="carte" style="margin-bottom: 20px;">
+          <p style="font-size: 0.875rem; color: var(--gris-700); margin-bottom: 16px;">
+            Détection automatique du type de portail et extraction via API native.
+            <strong>×30 plus rapide</strong> qu'un scan HTML classique.
+          </p>
+
+          <div class="champ-groupe">
+            <label for="odUrl" class="champ-label">URL du portail</label>
+            <input type="url" id="odUrl" class="champ-input" value="https://www.data.gouv.fr" placeholder="https://www.data.gouv.fr">
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="champ-groupe">
+              <label for="odPortal" class="champ-label">Portail (auto-détecté)</label>
+              <select id="odPortal" class="champ-select">
+                <option value="auto" selected>Auto-détection</option>
+                <option value="udata">udata (France)</option>
+                <option value="ckan">CKAN (Allemagne, UK…)</option>
+                <option value="opendatasoft">OpenDataSoft (Paris…)</option>
+                <option value="dcat">DCAT-AP (UE)</option>
+              </select>
+            </div>
+            <div class="champ-groupe">
+              <label for="odMax" class="champ-label">Datasets max</label>
+              <select id="odMax" class="champ-select">
+                <option value="50">50</option>
+                <option value="100" selected>100</option>
+                <option value="500">500</option>
+                <option value="1000">1000</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 16px;">
+            <p style="font-size: 0.82rem; color: var(--gris-700); margin-bottom: 8px; font-weight: 600;">
+              Exemples rapides :
+            </p>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+              <button class="btn btn-secondaire od-example" data-url="https://www.data.gouv.fr" data-portal="udata" style="width:auto; padding:6px 12px; font-size:0.75rem;">
+                🇫🇷 data.gouv.fr
+              </button>
+              <button class="btn btn-secondaire od-example" data-url="https://opendata.paris.fr" data-portal="opendatasoft" style="width:auto; padding:6px 12px; font-size:0.75rem;">
+                🗼 Paris
+              </button>
+              <button class="btn btn-secondaire od-example" data-url="https://www.govdata.de" data-portal="ckan" style="width:auto; padding:6px 12px; font-size:0.75rem;">
+                🇩🇪 govdata.de
+              </button>
+              <button class="btn btn-secondaire od-example" data-url="https://data.europa.eu" data-portal="dcat" style="width:auto; padding:6px 12px; font-size:0.75rem;">
+                🇪🇺 data.europa.eu
+              </button>
+            </div>
+          </div>
+
+          <div class="btn-group">
+            <button id="btnScanOpenData" class="btn btn-primaire">
+              <i class="fas fa-play"></i> Scanner via API
+            </button>
+          </div>
+        </div>
+
+        <div class="stats-grille" id="odStats" style="display:none; margin-bottom: 20px;">
+          <div class="stat-carte">
+            <div class="stat-valeur" id="odStatTotal">0</div>
+            <div class="stat-libelle">Ressources</div>
+          </div>
+          <div class="stat-carte">
+            <div class="stat-valeur" id="odStatDatasets">0</div>
+            <div class="stat-libelle">Datasets</div>
+          </div>
+          <div class="stat-carte">
+            <div class="stat-valeur" id="odStatResources">0</div>
+            <div class="stat-libelle">Fichiers</div>
+          </div>
+          <div class="stat-carte">
+            <div class="stat-valeur" id="odStatDuration">0</div>
+            <div class="stat-libelle">ms</div>
+          </div>
+        </div>
+
+        <div id="odResults"></div>
+      </div>
+
+      <div id="modeApi" class="panneau" role="tabpanel" style="display:none;">
+        <div class="panneau-entete">
+          <h2 class="panneau-titre">
+            <i class="fas fa-plug" style="color: var(--couleur-accent);" aria-hidden="true"></i>
+            Analyse d'APIs publiques
+          </h2>
+          <span class="info-resultat">15+ APIs référencées</span>
+        </div>
+
+        <div class="carte" style="margin-bottom: 20px;">
+          <h3 class="carte-titre">
+            <i class="fas fa-flask"></i> Test manuel d'une API
+          </h3>
+
+          <div class="champ-groupe">
+            <label for="apiUrl" class="champ-label">URL de l'endpoint</label>
+            <input type="url" id="apiUrl" class="champ-input" placeholder="https://api.exemple.fr/v1/...">
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 16px;">
+            <div class="champ-groupe">
+              <label for="apiMethod" class="champ-label">Méthode</label>
+              <select id="apiMethod" class="champ-select">
+                <option>GET</option>
+                <option>POST</option>
+                <option>PUT</option>
+                <option>DELETE</option>
+              </select>
+            </div>
+            <div class="champ-groupe">
+              <label for="apiHeaders" class="champ-label">En-têtes (JSON)</label>
+              <textarea id="apiHeaders" class="champ-textarea" rows="2">{}</textarea>
+            </div>
+          </div>
+
+          <div class="champ-groupe">
+            <label for="apiBody" class="champ-label">Corps de la requête (JSON)</label>
+            <textarea id="apiBody" class="champ-textarea" rows="3"></textarea>
+          </div>
+
+          <div class="champ-checkbox">
+            <input type="checkbox" id="apiInsecure">
+            <label for="apiInsecure">Ignorer la vérification SSL (test uniquement)</label>
+          </div>
+
+          <button class="btn btn-primaire" id="btnProbeApi">
+            <i class="fas fa-play"></i> Tester l'API
+          </button>
+        </div>
+
+        <div class="carte" style="margin-bottom: 20px;">
+          <h3 class="carte-titre">
+            <i class="fas fa-book"></i> Catalogue des APIs publiques
+          </h3>
+          <p style="font-size: 0.875rem; color: var(--gris-700); margin-bottom: 16px;">
+            Accédez aux APIs publiques françaises référencées sur data.gouv.fr.
+          </p>
+          <div class="btn-group">
+            <button class="btn btn-primaire" id="btnLoadCatalog">
+              <i class="fas fa-list"></i> Afficher le catalogue complet
+            </button>
+            <button class="btn btn-secondaire" id="btnProbeCatalog">
+              <i class="fas fa-vial"></i> Tester tout le catalogue
+            </button>
+            <button class="btn btn-secondaire" id="btnLoadFicoba">
+              <i class="fas fa-landmark"></i> FICOBA v2 (DGFiP)
+            </button>
+          </div>
+        </div>
+
+        <div id="apiResult"></div>
+      </div>
+
+    </section>
+  </div>
+
+  <section id="documentation" style="margin-top: 48px; padding: 32px; background: var(--gris-50); border-radius: 6px;">
+    <h2 style="font-size: 1.25rem; color: var(--couleur-primaire); margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
+      <i class="fas fa-circle-info" style="color: var(--couleur-accent);"></i>
+      Documentation & mentions légales
+    </h2>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; font-size: 0.875rem; line-height: 1.7;">
+      <div>
+        <h3 style="color: var(--couleur-primaire); margin-bottom: 8px;">📖 À propos</h3>
+        <p>
+          Scanner Pro est un outil d'analyse technique permettant d'extraire, classifier
+          et auditer les ressources numériques d'un site.
+        </p>
+      </div>
+
+      <div>
+        <h3 style="color: var(--couleur-primaire); margin-bottom: 8px;">⚖️ Cadre d'utilisation</h3>
+        <p>
+          Cet outil doit être utilisé dans un cadre <strong>strictement légal</strong> :
+          audit de vos propres systèmes, ou analyse de données publiques.
+          Tout scan non autorisé peut constituer une infraction.
+        </p>
+      </div>
+
+      <div>
+        <h3 style="color: var(--couleur-primaire); margin-bottom: 8px;">🔒 Protection des données</h3>
+        <p>
+          Aucune donnée personnelle n'est collectée ni conservée.
+        </p>
+      </div>
+
+      <div id="accessibilite">
+        <h3 style="color: var(--couleur-primaire); margin-bottom: 8px;">♿ Accessibilité</h3>
+        <p>
+          Ce service vise la conformité <strong>RGAA 4.1</strong> (niveau AA).
+        </p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer-etat">
+  <div class="footer-inner">
+    <div class="footer-grille">
+      <div class="footer-colonne">
+        <h3>Le service</h3>
+        <ul>
+          <li><a href="#documentation">Documentation</a></li>
+          <li><a href="#accessibilite">Accessibilité</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-colonne">
+        <h3>Ressources</h3>
+        <ul>
+          <li><a href="https://www.data.gouv.fr/" target="_blank" rel="noopener">data.gouv.fr</a></li>
+          <li><a href="https://www.numerique.gouv.fr/" target="_blank" rel="noopener">numerique.gouv.fr</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-colonne">
+        <h3>Légal</h3>
+        <ul>
+          <li><a href="#documentation">Mentions légales</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bas">
+      <div class="footer-bas-gauche">
+        <div>
+          <div style="font-weight: 700; font-size: 0.9rem;">Scanner Pro</div>
+          <div style="font-size: 0.75rem; color: var(--gris-500);">
+            © 2026 — Outil d'analyse technique
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<div class="notifications" id="toasts" role="status" aria-live="polite"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  UTILITAIRES
+// ═══════════════════════════════════════════════════════════
+
+const $ = sel => document.querySelector(sel);
+const $$ = sel => document.querySelectorAll(sel);
+
+let state = {
+  allLinks: [],
+  filteredLinks: [],
+  currentFilter: 'all',
+  currentSearch: '',
+  currentPage: 1,
+  perPage: 50,
+  stats: null,
+  pages: [],
+  errors: []
+};
+
+function notification(msg, type = 'info') {
+  const t = document.createElement('div');
+  t.className = `notification ${type}`;
+  t.setAttribute('role', 'alert');
+  t.textContent = msg;
+  $('#toasts').appendChild(t);
+  setTimeout(() => t.remove(), 4500);
+}
+
+function escapeHtml(t) {
+  return String(t ?? '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
+function safeHref(url) {
+  try {
+    const u = new URL(url);
+    if (!['http:', 'https:'].includes(u.protocol)) return '#';
+    return u.href;
+  } catch {
+    return '#';
+  }
+}
+
+function showConfirm(title, message) {
+  return new Promise((resolve) => {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 10000; padding: 20px;
+    `;
+    overlay.innerHTML = `
+      <div style="background: white; border-radius: 6px; padding: 24px; max-width: 480px; width: 100%; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
+        <h3 style="color: var(--couleur-primaire); margin-bottom: 12px; font-size: 1.1rem;">${escapeHtml(title)}</h3>
+        <p style="color: var(--gris-700); margin-bottom: 20px; font-size: 0.9rem;">${escapeHtml(message)}</p>
+        <div style="display: flex; gap: 8px; justify-content: flex-end;">
+          <button class="btn btn-secondaire" style="width: auto; padding: 8px 20px;" data-action="cancel">Annuler</button>
+          <button class="btn btn-primaire" style="width: auto; padding: 8px 20px;" data-action="confirm">Confirmer</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    overlay.addEventListener('click', (e) => {
+      const action = e.target.dataset.action;
+      if (action === 'confirm') { overlay.remove(); resolve(true); }
+      else if (action === 'cancel' || e.target === overlay) { overlay.remove(); resolve(false); }
+    });
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+//  ONGLETS
+// ═══════════════════════════════════════════════════════════
+
+$$('.onglet').forEach(tab => {
+  tab.addEventListener('click', () => {
+    $$('.onglet').forEach(t => {
+      t.classList.remove('actif');
+      t.setAttribute('aria-selected', 'false');
+    });
+    tab.classList.add('actif');
+    tab.setAttribute('aria-selected', 'true');
+
+    const mode = tab.dataset.mode;
+    $('#modeScan').style.display = mode === 'scan' ? 'block' : 'none';
+    $('#modeFull').style.display = mode === 'full' ? 'block' : 'none';
+    $('#modeApi').style.display = mode === 'api' ? 'block' : 'none';
+    $('#modeOpenData').style.display = mode === 'opendata' ? 'block' : 'none';
+  });
+});
+
+function switchTab(mode) {
+  $$('.onglet').forEach(t => {
+    const isTarget = t.dataset.mode === mode;
+    t.classList.toggle('actif', isTarget);
+    t.setAttribute('aria-selected', isTarget ? 'true' : 'false');
+  });
+  $('#modeScan').style.display = mode === 'scan' ? 'block' : 'none';
+  $('#modeFull').style.display = mode === 'full' ? 'block' : 'none';
+  $('#modeApi').style.display = mode === 'api' ? 'block' : 'none';
+  $('#modeOpenData').style.display = mode === 'opendata' ? 'block' : 'none';
+}
+
+// ═══════════════════════════════════════════════════════════
+//  BADGES
+// ═══════════════════════════════════════════════════════════
+
+function badgeFor(link) {
+  const rt = link.resourceType;
+  if (rt === 'pdf') return '<span class="badge badge-pdf">PDF</span>';
+  if (rt === 'image') return '<span class="badge badge-image">IMAGE</span>';
+  if (['doc','docx','xls','xlsx','csv','txt'].includes(rt))
+    return `<span class="badge badge-doc">${rt.toUpperCase()}</span>`;
+  if (link.type === 'internal') return '<span class="badge badge-interne">INTERNE</span>';
+  if (link.type === 'external') return '<span class="badge badge-externe">EXTERNE</span>';
+  return '<span class="badge badge-externe">HTML</span>';
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SCAN
+// ═══════════════════════════════════════════════════════════
+
+async function scan(force = false) {
+  const url = $('#targetUrl').value.trim();
+  const depth = parseInt($('#depth').value, 10);
+  const maxPages = parseInt($('#maxPages').value, 10);
+  const useBrowser = $('#useBrowser').value === 'true';
+
+  if (!url) return notification('Veuillez saisir une URL.', 'erreur');
+
+  $('#btnScan').disabled = true;
+  $('#btnForceScan').disabled = true;
+  $('#results').innerHTML = `
+    <div class="chargement">
+      <div class="spinner" role="status" aria-label="Chargement en cours"></div>
+      <p><strong>Analyse en cours…</strong></p>
+      <p style="font-size: 0.85rem; margin-top: 8px;">10 à 90 secondes selon le site.</p>
+    </div>`;
+  $('#resultsInfo').textContent = 'Analyse en cours…';
+  $('#filtersWrapper').style.display = 'none';
+
+  try {
+    const res = await fetch('/api/scan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, depth, maxPages, useBrowser, skipCache: force })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    state.allLinks = data.links;
+    state.stats = data.stats;
+    state.pages = data.pages;
+    state.errors = data.errors;
+    state.currentFilter = 'all';
+    state.currentSearch = '';
+    state.currentPage = 1;
+
+    updateStats(data.stats);
+    applyFilters();
+    $('#filtersWrapper').style.display = 'block';
+
+    notification(`Analyse terminée : ${data.stats.total} ressources trouvées.`, 'succes');
+  } catch (e) {
+    console.error(e);
+    $('#results').innerHTML = `
+      <div class="chargement">
+        <p style="color: var(--erreur); font-weight: 600;">Erreur : ${escapeHtml(e.message)}</p>
+      </div>`;
+    notification(e.message, 'erreur');
+  } finally {
+    $('#btnScan').disabled = false;
+    $('#btnForceScan').disabled = false;
+  }
+}
+
+function updateStats(s) {
+  $('#statTotal').textContent = s.total;
+  $('#statInternal').textContent = s.internal;
+  $('#statExternal').textContent = s.external;
+  $('#statPages').textContent = s.pages;
+  $('#statImages').textContent = s.images;
+  $('#statPdf').textContent = s.pdf;
+  $('#statDocs').textContent = s.documents;
+  $('#statErrors').textContent = s.errors;
+
+  const dur = s.durationMs ? ` • ${(s.durationMs / 1000).toFixed(1)}s` : '';
+  $('#resultsInfo').textContent = `${s.total} résultat${s.total > 1 ? 's' : ''}${dur}`;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  FILTRES
+// ═══════════════════════════════════════════════════════════
+
+function applyFilters() {
+  let data = [...state.allLinks];
+  const f = state.currentFilter;
+  const q = state.currentSearch.toLowerCase().trim();
+
+  if (f === 'internal') data = data.filter(l => l.type === 'internal');
+  else if (f === 'external') data = data.filter(l => l.type === 'external');
+  else if (f === 'image') data = data.filter(l => l.resourceType === 'image');
+  else if (f === 'pdf') data = data.filter(l => l.resourceType === 'pdf');
+  else if (f === 'document') data = data.filter(l => ['doc','docx','xls','xlsx','csv','txt'].includes(l.resourceType));
+
+  if (q) {
+    data = data.filter(l =>
+      l.url.toLowerCase().includes(q) || l.title.toLowerCase().includes(q)
+    );
+  }
+
+  state.filteredLinks = data;
+  state.currentPage = 1;
+  renderPage();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  RENDU
+// ═══════════════════════════════════════════════════════════
+
+function renderPage() {
+  const total = state.filteredLinks.length;
+  if (total === 0) {
+    $('#results').innerHTML = `
+      <div class="chargement">
+        <p style="font-weight: 600; color: var(--couleur-primaire);">Aucun résultat pour ce filtre.</p>
+      </div>
+      ${renderErrors(state.errors)}`;
+    return;
+  }
+
+  const start = (state.currentPage - 1) * state.perPage;
+  const pageData = state.filteredLinks.slice(start, start + state.perPage);
+  const totalPages = Math.ceil(total / state.perPage);
+
+  const rows = pageData.map(l => `
+    <tr>
+      <td>
+        <div style="font-weight:600; margin-bottom:4px;">${escapeHtml(l.title)}</div>
+        <div class="cellule-url">
+          <a href="${safeHref(l.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(l.url)}</a>
+        </div>
+      </td>
+      <td>${badgeFor(l)}</td>
+      <td style="font-size:0.82rem; color: var(--gris-700);">${escapeHtml(l.source)}</td>
+      <td>
+        <div class="pertinence">
+          <div class="pertinence-barre">
+            <div class="pertinence-remplissage" style="width:${(l.relevance * 100).toFixed(0)}%;"></div>
+          </div>
+          <span class="pertinence-valeur">${l.relevance.toFixed(2)}</span>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+
+  $('#results').innerHTML = `
+    <div class="tableau-wrapper">
+      <table class="tableau">
+        <caption class="sr-only">Résultats de l'analyse : ${total} ressources trouvées</caption>
+        <thead>
+          <tr>
+            <th style="width:55%">Titre / URL</th>
+            <th>Type</th>
+            <th>Source</th>
+            <th>Pertinence</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <button data-page="1" ${state.currentPage === 1 ? 'disabled' : ''} aria-label="Première page">«</button>
+      <button data-page="${state.currentPage - 1}" ${state.currentPage === 1 ? 'disabled' : ''} aria-label="Page précédente">←</button>
+      <span class="pagination-info">Page ${state.currentPage} / ${totalPages}</span>
+      <button data-page="${state.currentPage + 1}" ${state.currentPage === totalPages ? 'disabled' : ''} aria-label="Page suivante">→</button>
+      <button data-page="${totalPages}" ${state.currentPage === totalPages ? 'disabled' : ''} aria-label="Dernière page">»</button>
+    </div>
+    ${renderErrors(state.errors)}
+  `;
+
+  $$('#results .pagination button[data-page]').forEach(btn => {
+    btn.addEventListener('click', () => goToPage(parseInt(btn.dataset.page, 10)));
+  });
+}
+
+function goToPage(p) {
+  const totalPages = Math.ceil(state.filteredLinks.length / state.perPage);
+  if (p < 1 || p > totalPages) return;
+  state.currentPage = p;
+  renderPage();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderErrors(errors) {
+  if (!errors || !errors.length) return '';
+  return `
+    <div class="alerte alerte-erreur">
+      <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+      <div>
+        <strong>${errors.length} erreur${errors.length > 1 ? 's' : ''} rencontrée${errors.length > 1 ? 's' : ''}</strong>
+        <ul style="margin-top: 8px; padding-left: 20px; font-size: 0.82rem;">
+          ${errors.slice(0, 10).map(e =>
+            `<li><code>${escapeHtml(e.url)}</code> — ${escapeHtml(e.error)}</li>`
+          ).join('')}
+        </ul>
+      </div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SCAN COMPLET
+// ═══════════════════════════════════════════════════════════
+
+async function detectSitemap() {
+  const url = $('#fullUrl').value.trim();
+  if (!url) return notification('Veuillez saisir une URL.', 'erreur');
+
+  $('#results').innerHTML = '<div class="chargement"><div class="spinner"></div><p>Recherche du sitemap…</p></div>';
+  switchTab('scan');
+
+  try {
+    const res = await fetch('/api/sitemap', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, includeRSS: $('#fullIncludeRSS').checked })
+    });
+
+    const data = await res.json();
+
+    if (!data.success) {
+      $('#results').innerHTML = `
+        <div class="alerte alerte-attention">
+          <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+          <div>
+            <strong>Aucun sitemap trouvé</strong>
+            <p style="margin-top: 6px;">${escapeHtml(data.error || 'Erreur inconnue')}</p>
+          </div>
+        </div>`;
+      return;
+    }
+
+    const sm = data.sitemap;
+    $('#statFullUrls').textContent = sm.totalUrls || 0;
+
+    $('#results').innerHTML = `
+      <div class="alerte alerte-succes">
+        <i class="fas fa-circle-check" aria-hidden="true"></i>
+        <div>
+          <strong>Sitemap détecté</strong>
+          <p style="margin-top: 6px;">
+            Type : <strong>${escapeHtml(sm.type)}</strong> —
+            <code>${escapeHtml(sm.sitemapUrl)}</code>
+          </p>
+          <p style="margin-top: 6px;">
+            <strong>${sm.totalUrls}</strong> URLs prêtes à être analysées.
+          </p>
+          ${data.rss?.success ? `<p style="margin-top: 6px;">📰 Flux RSS : <strong>${data.rss.urls.length}</strong> URLs supplémentaires.</p>` : ''}
+        </div>
+      </div>
+    `;
+
+    notification(`${sm.totalUrls} URLs découvertes.`, 'succes');
+  } catch (err) {
+    $('#results').innerHTML = `<div class="alerte alerte-erreur">Erreur : ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+async function scanFull() {
+  const url = $('#fullUrl').value.trim();
+  const maxUrls = parseInt($('#fullMaxUrls').value, 10);
+  const concurrency = parseInt($('#fullConcurrency').value, 10);
+  const useBrowser = true;
+  const includeRSS = $('#fullIncludeRSS').checked;
+
+  if (!url) return notification('Veuillez saisir une URL.', 'erreur');
+
+  const ok = await showConfirm(
+    `Lancer un scan complet de ${url} ?`,
+    `Maximum ${maxUrls} pages — Parallélisme : ${concurrency}. Cela peut prendre plusieurs minutes.`
+  );
+  if (!ok) return;
+
+  $('#btnScanFull').disabled = true;
+  $('#btnDetectSitemap').disabled = true;
+  switchTab('scan');
+  $('#results').innerHTML = `
+    <div class="chargement">
+      <div class="spinner" role="status"></div>
+      <p><strong>Scan complet en cours…</strong></p>
+      <p style="font-size: 0.85rem; margin-top: 8px;">
+        Analyse de ${maxUrls} pages maximum. Cela peut prendre 2 à 10 minutes.
+      </p>
+    </div>`;
+  $('#fullInfo').textContent = 'Scan complet en cours…';
+
+  try {
+    const res = await fetch('/api/scan-full', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, maxUrls, concurrency, useBrowser, includeRSS })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+
+    state.allLinks = data.links;
+    state.stats = data.stats;
+    state.pages = data.pages;
+    state.errors = data.errors;
+    state.currentFilter = 'all';
+    state.currentPage = 1;
+
+    $('#statFullUrls').textContent = data.stats.sitemapUsed || 0;
+    $('#statFullScanned').textContent = data.stats.pages;
+    $('#statFullLinks').textContent = data.stats.total;
+    $('#statFullErrors').textContent = data.stats.errors;
+
+    updateStats(data.stats);
+    applyFilters();
+    $('#filtersWrapper').style.display = 'block';
+
+    const dur = (data.stats.durationMs / 1000).toFixed(1);
+    notification(`Scan complet terminé : ${data.stats.total} liens en ${dur}s.`, 'succes');
+  } catch (e) {
+    console.error(e);
+    $('#results').innerHTML = `
+      <div class="chargement">
+        <p style="color: var(--erreur); font-weight: 600;">Erreur : ${escapeHtml(e.message)}</p>
+      </div>`;
+    notification(e.message, 'erreur');
+  } finally {
+    $('#btnScanFull').disabled = false;
+    $('#btnDetectSitemap').disabled = false;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  CATALOGUE
+// ═══════════════════════════════════════════════════════════
+
+async function loadCatalog() {
+  $('#apiResult').innerHTML = '<div class="chargement"><div class="spinner"></div><p>Chargement du catalogue…</p></div>';
+
+  try {
+    const res = await fetch('/api/apis-catalog');
+    const data = await res.json();
+
+    const grouped = {};
+    data.apis.forEach(api => {
+      if (!grouped[api.category]) grouped[api.category] = [];
+      grouped[api.category].push(api);
+    });
+
+    let html = `
+      <div class="carte" style="margin-top: 20px;">
+        <h3 class="carte-titre">
+          <i class="fas fa-list"></i> Catalogue des APIs
+        </h3>
+        <p style="font-size: 0.875rem; color: var(--gris-700); margin-bottom: 16px;">
+          <strong>${data.stats.total}</strong> APIs référencées dans
+          <strong>${Object.keys(data.stats.byCategory).length}</strong> catégories.
+        </p>
+    `;
+
+    for (const [category, apis] of Object.entries(grouped)) {
+      html += `
+        <details style="margin-top: 16px; padding: 12px; background: var(--gris-50); border-radius: 4px;">
+          <summary style="cursor: pointer; font-weight: 700; color: var(--couleur-primaire);">
+            ${escapeHtml(category)} (${apis.length})
+          </summary>
+          <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 10px;">
+            ${apis.map(api => `
+              <details style="background: white; padding: 12px; border-radius: 4px; border: 1px solid var(--gris-200);">
+                <summary style="cursor: pointer; font-weight: 600; color: var(--couleur-primaire); font-size: 0.9rem;">
+                  ${escapeHtml(api.name)}
+                  <span class="badge ${api.auth === 'public' ? 'badge-interne' : 'badge-pdf'}" style="font-size: 0.65rem; margin-left: 8px;">
+                    ${api.auth === 'public' ? 'PUBLIC' : api.auth.toUpperCase()}
+                  </span>
+                </summary>
+                <div style="margin-top: 10px; font-size: 0.82rem;">
+                  <p style="color: var(--gris-700); margin-bottom: 8px;">${escapeHtml(api.description)}</p>
+                  <p><strong>Base URL</strong> : <code>${escapeHtml(api.baseUrl)}</code></p>
+                  ${api.docsUrl ? `<p><strong>Documentation</strong> : <a href="${safeHref(api.docsUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(api.docsUrl)}</a></p>` : ''}
+                  <p style="margin-top: 8px;"><strong>Exemples :</strong></p>
+                  <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;">
+                    ${api.examples.map(ex => `
+                      <button class="btn btn-secondaire" style="width:auto; padding:6px 12px; font-size:0.75rem;"
+                              data-test-api="${escapeHtml(ex.url)}">
+                        ${escapeHtml(ex.label)}
+                      </button>
+                    `).join('')}
+                  </div>
+                </div>
+              </details>
+            `).join('')}
+          </div>
+        </details>
+      `;
+    }
+
+    html += '</div>';
+    $('#apiResult').innerHTML = html;
+    notification(`${data.stats.total} APIs chargées.`, 'succes');
+  } catch (err) {
+    $('#apiResult').innerHTML = `<div class="alerte alerte-erreur">Erreur : ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  PROBE API
+// ═══════════════════════════════════════════════════════════
+
+async function probeAPI() {
+  const url = $('#apiUrl').value.trim();
+  const method = $('#apiMethod').value;
+  const headersText = $('#apiHeaders').value.trim();
+  const bodyText = $('#apiBody').value.trim();
+  const insecure = $('#apiInsecure').checked;
+
+  if (!url) return notification('Veuillez saisir une URL.', 'erreur');
+
+  let headers = {};
+  try { headers = headersText ? JSON.parse(headersText) : {}; }
+  catch { return notification('En-têtes JSON invalides.', 'erreur'); }
+
+  let body = null;
+  if (bodyText) {
+    try { body = JSON.parse(bodyText); }
+    catch { return notification('Corps JSON invalide.', 'erreur'); }
+  }
+
+  $('#apiResult').innerHTML = '<div class="chargement"><div class="spinner"></div><p>Test en cours…</p></div>';
+
+  try {
+    const res = await fetch('/api/probe-rest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, method, headers, body, insecure })
+    });
+
+    const data = await res.json();
+    renderAPIResult(data);
+  } catch (err) {
+    $('#apiResult').innerHTML = `<div class="alerte alerte-erreur">Erreur : ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+function renderAPIResult(data) {
+  if (!data.success) {
+    $('#apiResult').innerHTML = `
+      <div class="alerte alerte-erreur" style="margin-top: 20px;">
+        <i class="fas fa-circle-xmark"></i>
+        <div>
+          <strong>Échec — ${escapeHtml(data.errorType || 'inconnu')}</strong>
+          <p style="margin-top: 6px;">${escapeHtml(data.error)}</p>
+          ${data.hint ? `<p style="margin-top: 6px; font-style: italic;">${escapeHtml(data.hint)}</p>` : ''}
+        </div>
+      </div>`;
+    return;
+  }
+
+  const sec = data.security;
+  const statusColor = data.status < 300 ? 'var(--succes)'
+                    : data.status < 400 ? 'var(--attention)'
+                    : 'var(--erreur)';
+
+  $('#apiResult').innerHTML = `
+    <div class="carte" style="margin-top: 20px;">
+      <h3 class="carte-titre">
+        <i class="fas fa-circle-check" style="color: var(--succes);"></i>
+        Réponse reçue
+      </h3>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+        <span style="background: ${statusColor}; color: white; padding: 6px 14px; border-radius: 4px; font-weight: 700; font-size: 0.85rem;">
+          ${data.status} ${escapeHtml(data.statusText)}
+        </span>
+        <span style="font-size: 0.82rem; color: var(--gris-700);">
+          ${data.durationMs} ms • ${(data.size / 1024).toFixed(1)} Ko
+        </span>
+      </div>
+
+      <h4 style="color: var(--couleur-primaire); font-size: 0.9rem; margin-top: 16px;">🔍 En-têtes de sécurité</h4>
+      <ul style="margin-top: 8px; font-size: 0.82rem; color: var(--gris-700);">
+        <li>HSTS : ${sec.hsts ? '✅' : '❌'}</li>
+        <li>CSP : ${sec.csp ? '✅' : '❌'}</li>
+        <li>CORS : <code>${escapeHtml(sec.cors || 'non')}</code></li>
+        <li>Auth requise : ${sec.needsAuth ? '🔐 OUI (401)' : 'Non'}</li>
+        <li>Serveur : <code>${escapeHtml(sec.server || '?')}</code></li>
+      </ul>
+
+      ${data.isJSON ? `
+        <h4 style="color: var(--couleur-primaire); font-size: 0.9rem; margin-top: 16px;">📊 Structure JSON</h4>
+        <p style="font-size: 0.82rem; margin-top: 6px;">
+          Type : <strong>${data.json.type}</strong>
+          ${data.json.length ? ` — ${data.json.length} élément(s)` : ''}
+        </p>
+        <pre style="background: var(--gris-50); padding: 12px; border-radius: 4px; font-size: 0.72rem; overflow: auto; max-height: 400px; margin-top: 10px; font-family: var(--font-mono);">${escapeHtml(data.json.sample)}</pre>
+      ` : ''}
+    </div>
+  `;
+}
+
+async function probeCatalog() {
+  $('#apiResult').innerHTML = '<div class="chargement"><div class="spinner"></div><p>Test de toutes les APIs du catalogue…</p></div>';
+
+  try {
+    const res = await fetch('/api/probe-catalog', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ maxApis: 20 })
+    });
+
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Erreur');
+
+    const s = data.summary;
+    const rows = data.results.map(r => {
+      const color = !r.success ? 'var(--erreur)'
+                  : r.status < 300 ? 'var(--succes)'
+                  : r.status < 400 ? 'var(--attention)'
+                  : 'var(--erreur)';
+      const statusLabel = r.success ? `${r.status} ${r.statusText || ''}` : '❌ Échec';
+      return `
+        <tr>
+          <td>
+            <div style="font-weight:600;">${escapeHtml(r.name)}</div>
+            <div style="font-size:0.75rem; color: var(--gris-500);">${escapeHtml(r.category)}</div>
+          </td>
+          <td>
+            <span style="background: ${color}; color: white; padding: 3px 8px; border-radius: 3px; font-size: 0.72rem; font-weight: 700;">
+              ${escapeHtml(statusLabel)}
+            </span>
+          </td>
+          <td style="font-size:0.8rem; color: var(--gris-700);">
+            ${r.durationMs ? r.durationMs + ' ms' : '—'}
+          </td>
+          <td style="font-size:0.8rem; color: var(--gris-700);">
+            ${r.isJSON ? 'JSON' : '—'}
+            ${r.size ? ` • ${(r.size / 1024).toFixed(1)} Ko` : ''}
+          </td>
+          <td style="font-size:0.75rem; font-family: var(--font-mono); word-break: break-all; max-width: 280px;">
+            ${escapeHtml(r.url)}
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    $('#apiResult').innerHTML = `
+      <div class="carte" style="margin-top: 20px;">
+        <h3 class="carte-titre">
+          <i class="fas fa-vial"></i>
+          Test du catalogue (${s.total} APIs)
+        </h3>
+
+        <div class="stats-grille" style="margin-bottom: 20px;">
+          <div class="stat-carte">
+            <div class="stat-valeur" style="color: var(--succes);">${s.ok}</div>
+            <div class="stat-libelle">OK</div>
+          </div>
+          <div class="stat-carte">
+            <div class="stat-valeur" style="color: var(--attention);">${s.redirects}</div>
+            <div class="stat-libelle">Redirections</div>
+          </div>
+          <div class="stat-carte">
+            <div class="stat-valeur" style="color: var(--attention);">${s.clientErrors}</div>
+            <div class="stat-libelle">Erreurs 4xx</div>
+          </div>
+          <div class="stat-carte">
+            <div class="stat-valeur" style="color: var(--erreur);">${s.serverErrors}</div>
+            <div class="stat-libelle">Erreurs 5xx</div>
+          </div>
+          <div class="stat-carte">
+            <div class="stat-valeur" style="color: var(--erreur);">${s.failed}</div>
+            <div class="stat-libelle">Échecs réseau</div>
+          </div>
+        </div>
+
+        <div class="tableau-wrapper">
+          <table class="tableau">
+            <thead>
+              <tr>
+                <th>API</th>
+                <th>Statut</th>
+                <th>Durée</th>
+                <th>Type</th>
+                <th>URL testée</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      </div>
+    `;
+
+    notification(`Catalogue testé : ${s.ok}/${s.total} OK.`, s.ok > 0 ? 'succes' : 'attention');
+  } catch (err) {
+    $('#apiResult').innerHTML = `<div class="alerte alerte-erreur">Erreur : ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  TEST API (via boutons catalogue)
+// ═══════════════════════════════════════════════════════════
+
+async function testApi(url) {
+  $('#apiUrl').value = url;
+  $('#apiMethod').value = 'GET';
+  $('#apiHeaders').value = '{}';
+  $('#apiBody').value = '';
+  switchTab('api');
+  await probeAPI();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  FICOBA
+// ═══════════════════════════════════════════════════════════
+
+async function loadFicoba() {
+  const url = 'https://raw.githubusercontent.com/betagouv/api_gouv_swaggers/refs/heads/main/swaggers/api-ficoba3.json';
+
+  $('#apiResult').innerHTML = '<div class="chargement"><div class="spinner"></div><p>Chargement de FICOBA…</p></div>';
+
+  try {
+    const res = await fetch('/api/analyze-swagger', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url })
+    });
+
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+
+    $('#apiResult').innerHTML = `
+      <div class="carte" style="margin-top: 20px;">
+        <h3 class="carte-titre">
+          <i class="fas fa-landmark"></i>
+          FICOBA v2 — DGFiP
+        </h3>
+        <p style="font-size: 0.875rem; color: var(--gris-700); margin-bottom: 12px;">
+          ${escapeHtml(data.info.description || '')}
+        </p>
+        <p style="font-size: 0.85rem;">
+          Version : <strong>${escapeHtml(data.info.version || '')}</strong> —
+          ${data.endpointsCount} endpoints référencés
+        </p>
+      </div>
+      <div class="alerte alerte-attention" style="margin-top: 16px;">
+        <i class="fas fa-triangle-exclamation"></i>
+        <div>
+          <strong>Documentation publique uniquement</strong>
+          <p style="margin-top: 6px;">
+            Cet outil analyse la <strong>documentation</strong> publique de l'API.
+            L'accès réel à FICOBA est réservé aux partenaires habilités.
+          </p>
+        </div>
+      </div>
+    `;
+    notification(`FICOBA v2 : ${data.endpointsCount} endpoints.`, 'succes');
+  } catch (err) {
+    $('#apiResult').innerHTML = `<div class="alerte alerte-erreur">Erreur : ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  EXPORT
+// ═══════════════════════════════════════════════════════════
+
+async function exportResults() {
+  const links = state.filteredLinks.length > 0 ? state.filteredLinks : state.allLinks;
+
+  if (!links || links.length === 0) {
+    return notification('Aucun résultat à exporter. Lancez d\'abord un scan.', 'attention');
+  }
+
+  const format = await showExportDialog(links.length);
+  if (!format) return;
+
+  try {
+    const res = await fetch('/api/export', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        links,
+        format,
+        filename: `scanner-${new Date().toISOString().slice(0,10)}`
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `HTTP ${res.status}`);
+    }
+
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `scanner-${new Date().toISOString().slice(0,10)}.${format}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    notification(`${links.length} résultats exportés en ${format.toUpperCase()}.`, 'succes');
+  } catch (err) {
+    console.error(err);
+    notification(`Erreur d'export : ${err.message}`, 'erreur');
+  }
+}
+
+function showExportDialog(count) {
+  return new Promise((resolve) => {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 10000; padding: 20px;
+    `;
+    overlay.innerHTML = `
+      <div style="background: white; border-radius: 6px; padding: 24px; max-width: 480px; width: 100%; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
+        <h3 style="color: var(--couleur-primaire); margin-bottom: 12px; font-size: 1.1rem;">
+          Exporter ${count} résultats
+        </h3>
+        <p style="color: var(--gris-700); margin-bottom: 20px; font-size: 0.9rem;">
+          Choisissez le format d'export :
+        </p>
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;">
+          <button class="btn btn-secondaire" style="text-align: left; justify-content: flex-start;" data-format="json">
+            <i class="fas fa-code"></i> <strong>JSON</strong> — structuré, idéal pour traitement
+          </button>
+          <button class="btn btn-secondaire" style="text-align: left; justify-content: flex-start;" data-format="csv">
+            <i class="fas fa-table"></i> <strong>CSV</strong> — tableur (Excel, LibreOffice)
+          </button>
+          <button class="btn btn-secondaire" style="text-align: left; justify-content: flex-start;" data-format="jsonl">
+            <i class="fas fa-list"></i> <strong>JSONL</strong> — un objet JSON par ligne
+          </button>
+        </div>
+        <div style="display: flex; gap: 8px; justify-content: flex-end;">
+          <button class="btn btn-secondaire" style="width: auto; padding: 8px 20px;" data-action="cancel">Annuler</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    overlay.addEventListener('click', (e) => {
+      const format = e.target.closest('[data-format]')?.dataset.format;
+      if (format) {
+        overlay.remove();
+        resolve(format);
+      } else if (e.target.dataset.action === 'cancel' || e.target === overlay) {
+        overlay.remove();
+        resolve(null);
+      }
+    });
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+//  OPEN DATA
+// ═══════════════════════════════════════════════════════════
+
+async function scanOpenData() {
+  const url = $('#odUrl').value.trim();
+  const maxDatasets = parseInt($('#odMax').value, 10);
+
+  if (!url) return notification('Veuillez saisir une URL.', 'erreur');
+
+  $('#btnScanOpenData').disabled = true;
+  $('#odResults').innerHTML = `
+    <div class="chargement">
+      <div class="spinner" role="status"></div>
+      <p><strong>Détection du portail…</strong></p>
+      <p style="font-size: 0.85rem; margin-top: 8px;">
+        Test des APIs udata, CKAN, OpenDataSoft, DCAT-AP
+      </p>
+    </div>`;
+  $('#odStats').style.display = 'none';
+
+  try {
+    const res = await fetch('/api/scan-opendata', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, maxDatasets })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+
+    if (!data.success || data.stats.total === 0) {
+      $('#odResults').innerHTML = `
+        <div class="alerte alerte-attention">
+          <i class="fas fa-circle-exclamation"></i>
+          <div>
+            <strong>Aucun dataset trouvé</strong>
+            <p style="margin-top: 6px;">
+              Le portail ${escapeHtml(url)} n'a pas d'API open data reconnue.
+              Types testés : udata, CKAN, OpenDataSoft, DCAT-AP.
+            </p>
+          </div>
+        </div>`;
+      return;
+    }
+
+    // Stats
+    const datasets = data.links.filter(l => l.via && l.via.includes('-api') && l.metadata?.numResources !== undefined);
+    const resources = data.links.filter(l => l.type === 'external');
+
+    $('#odStatTotal').textContent = data.stats.total;
+    $('#odStatDatasets').textContent = datasets.length;
+    $('#odStatResources').textContent = resources.length;
+    $('#odStatDuration').textContent = data.stats.durationMs;
+    $('#odStats').style.display = 'grid';
+
+    // Résultats
+    renderOpenDataResults(data);
+
+    notification(`${data.stats.total} ressources extraites via ${data.type} en ${(data.stats.durationMs/1000).toFixed(1)}s.`, 'succes');
+  } catch (err) {
+    console.error(err);
+    $('#odResults').innerHTML = `
+      <div class="alerte alerte-erreur">
+        <i class="fas fa-triangle-exclamation"></i>
+        <div><strong>Erreur :</strong> ${escapeHtml(err.message)}</div>
+      </div>`;
+    notification(err.message, 'erreur');
+  } finally {
+    $('#btnScanOpenData').disabled = false;
+  }
+}
+
+function renderOpenDataResults(data) {
+  const datasets = data.links.filter(l => l.type === 'internal' && l.via?.includes('-api'));
+  const resources = data.links.filter(l => l.type === 'external');
+
+  const rows = data.links.slice(0, 200).map(l => {
+    const isDataset = l.type === 'internal';
+    const org = l.metadata?.organization || l.metadata?.publisher || '—';
+    const format = l.metadata?.format || (isDataset ? 'page' : '—');
+
+    return `
+      <tr>
+        <td>
+          <div style="font-weight:600; margin-bottom:4px;">${escapeHtml(l.title || '(sans titre)')}</div>
+          <div class="cellule-url">
+            <a href="${safeHref(l.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(l.url)}</a>
+          </div>
+        </td>
+        <td>${isDataset
+          ? '<span class="badge badge-interne">DATASET</span>'
+          : `<span class="badge badge-doc">${escapeHtml(format.toUpperCase())}</span>`}</td>
+        <td style="font-size:0.82rem; color: var(--gris-700);">${escapeHtml(org)}</td>
+        <td style="font-size:0.75rem; font-family: var(--font-mono);">${escapeHtml(l.via || '')}</td>
+      </tr>
+    `;
+  }).join('');
+
+  const more = data.links.length > 200
+    ? `<p style="text-align:center; padding:16px; color: var(--gris-700);">… et ${data.links.length - 200} autres résultats (utilisez l'export pour tout récupérer)</p>`
+    : '';
+
+  $('#odResults').innerHTML = `
+    <div class="panneau-entete" style="margin-top: 20px;">
+      <h3 class="panneau-titre" style="font-size: 1.1rem;">
+        <i class="fas fa-list" style="color: var(--couleur-accent);"></i>
+        Résultats — ${escapeHtml(data.type.toUpperCase())}
+      </h3>
+      <button class="btn btn-primaire" id="btnExportOpenData" style="width:auto; padding:8px 16px; font-size:0.85rem;">
+        <i class="fas fa-download"></i> Exporter (${data.links.length})
+      </button>
+    </div>
+
+    <div class="tableau-wrapper">
+      <table class="tableau">
+        <caption class="sr-only">Résultats open data : ${data.links.length} ressources</caption>
+        <thead>
+          <tr>
+            <th style="width:55%">Titre / URL</th>
+            <th>Type</th>
+            <th>Organisation</th>
+            <th>Source</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    ${more}
+  `;
+
+  // Attache l'export
+  $('#btnExportOpenData')?.addEventListener('click', async () => {
+    const format = await showExportDialog(data.links.length);
+    if (!format) return;
+
+    try {
+      const res = await fetch('/api/export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          links: data.links,
+          format,
+          filename: `opendata-${data.type}-${new Date().toISOString().slice(0,10)}`
+        })
+      });
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `opendata-${data.type}-${new Date().toISOString().slice(0,10)}.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      notification(`${data.links.length} résultats exportés.`, 'succes');
+    } catch (err) {
+      notification(`Erreur : ${err.message}`, 'erreur');
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+//  ÉVÉNEMENTS
+// ═══════════════════════════════════════════════════════════
+
+$('#btnScan').addEventListener('click', () => scan(false));
+$('#btnForceScan').addEventListener('click', () => scan(true));
+$('#btnScanFull').addEventListener('click', scanFull);
+$('#btnDetectSitemap').addEventListener('click', detectSitemap);
+$('#btnProbeApi').addEventListener('click', probeAPI);
+$('#btnLoadCatalog').addEventListener('click', loadCatalog);
+$('#btnProbeCatalog').addEventListener('click', probeCatalog);
+$('#btnLoadFicoba').addEventListener('click', loadFicoba);
+$('#btnExport').addEventListener('click', exportResults);
+$('#btnScanOpenData').addEventListener('click', scanOpenData);
+
+$('.od-example').forEach(btn => {
+  btn.addEventListener('click', () => {
+    $('#odUrl').value = btn.dataset.url;
+    $('#odPortal').value = btn.dataset.portal;
+    scanOpenData();
+  });
+});
+
+$$('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    $$('.filter-btn').forEach(b => b.classList.remove('actif'));
+    btn.classList.add('actif');
+    state.currentFilter = btn.dataset.filter;
+    applyFilters();
+  });
+});
+
+$('#filterSearch').addEventListener('input', (e) => {
+  state.currentSearch = e.target.value;
+  applyFilters();
+});
+
+// Délégation pour les boutons data-test-api
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-test-api]');
+  if (btn) testApi(btn.dataset.testApi);
+});
+
+// Placeholder boutons secondaires
+$('#btnExtractAll').addEventListener('click', () => {
+  notification('Fonction d\'extraction groupée : utilisez le catalogue d\'APIs.', 'info');
+});
+$('#btnDetectApis').addEventListener('click', () => {
+  notification('Détection d\'APIs : lancez un scan puis explorez les résultats.', 'info');
+});
+</script>
+
+</body>
+</html>
