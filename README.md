@@ -1,142 +1,47 @@
-<div align="center">
+# Scanner Pro
 
-# 🛰️ Scanner Pro
+[![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A520-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Express](https://img.shields.io/badge/Express-4.21-000000?logo=express&logoColor=white)](https://expressjs.com/)
+[![Puppeteer](https://img.shields.io/badge/Puppeteer-25.12-40B5A4?logo=puppeteer&logoColor=white)](https://pptr.dev/)
+[![undici](https://img.shields.io/badge/undici-8.11-FF6B35)](https://undici.nodejs.org/)
+[![License](https://img.shields.io/badge/license-usage%20personnel-blue)](#-licence)
+[![Tests](https://img.shields.io/badge/tests-node%3Atest-green)](tests/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)](#-contribuer)
+[![RGPD](https://img.shields.io/badge/RGPD-conforme-003399)](https://www.cnil.fr/fr/rgpd-de-quoi-parle-t-on)
+[![RGAA](https://img.shields.io/badge/RGAA-4.1%20AA-000091)](https://accessibilite.numerique.gouv.fr/)
 
-### Plateforme d'extraction, d'analyse et de reconnaissance pour la cybersécurité
+> ⚠️ **Usage légal uniquement.** Cet outil doit être utilisé sur des sites que vous êtes autorisé à analyser (vos propres systèmes, ou données publiques). Tout scan non autorisé peut constituer une infraction pénale (art. 323-1 du Code pénal français).
 
-**Extraction de liens · Analyse d'APIs · Lecture de documents · Scan de sitemap**
-
-[![Cybersecurity](https://img.shields.io/badge/Cybersecurity-Offensive%20%26%20Defensive-red?style=for-the-badge&logo=shield&logoColor=white)](https://github.com/)
-[![Made in France](https://img.shields.io/badge/Made%20in-France-0055A4?style=for-the-badge&logo=flag&logoColor=white)](https://www.gouvernement.fr/)
-[![Node.js](https://img.shields.io/badge/Node.js-22.x-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
-[![License MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
-
-[![Security Audit](https://img.shields.io/badge/npm%20audit-1%20moderate-orange?style=for-the-badge&logo=npm)](https://www.npmjs.com/)
-[![Puppeteer](https://img.shields.io/badge/Puppeteer-25.x-40B5A4?style=for-the-badge&logo=puppeteer)](https://pptr.dev/)
-[![Version](https://img.shields.io/badge/Version-4.0.0-blue?style=for-the-badge)](https://github.com/)
-
----
-
-</div>
-
-## ⚠️ Avertissement Cybersécurité
-
-> **Ce projet est un outil de reconnaissance et d'audit.**
->
-> Il est destiné à un usage **légal uniquement** :
-> - ✅ Audit de vos propres sites/infrastructures
-> - ✅ Tests d'intrusion avec autorisation écrite
-> - ✅ Recherche en cybersécurité (bug bounty, CTF, formation)
-> - ✅ Analyse de données publiques (open data)
->
-> ❌ **N'est PAS destiné à :**
-> - Scanner des sites sans autorisation (illégal — art. 323-1 du Code pénal)
-> - Contourner des protections d'API gouvernementales
-> - Collecter massivement des données personnelles (RGPD)
-> - Attaquer des infrastructures tierces
->
-> **L'auteur décline toute responsabilité en cas d'utilisation abusive.**
+Outil d'analyse technique de sites web : extraction de liens, détection d'APIs, audit de sécurité.
 
 ---
 
-## 📋 Table des matières
+## 📋 Sommaire
 
-- [Aperçu](#-aperçu)
 - [Fonctionnalités](#-fonctionnalités)
-- [Sécurité](#-sécurité)
 - [Installation](#-installation)
-- [Utilisation](#-utilisation)
-- [Architecture](#-architecture)
-- [APIs supportées](#-apis-supportées)
-- [Conformité légale](#-conformité-légale)
+- [Architecture](#️-architecture)
+- [API](#-api)
+- [Sécurité](#-sécurité)
+- [Cadre légal](#️-cadre-légal)
+- [Stack technique](#️-stack-technique)
+- [Tests](#-tests)
 - [Contribuer](#-contribuer)
 - [Licence](#-licence)
 
 ---
 
-## 🎯 Aperçu
+## ✨ Fonctionnalités
 
-**Scanner Pro** est une plateforme Node.js complète qui combine :
-
-| Capacité | Description |
+| Fonctionnalité | Description |
 |---|---|
-| 🔍 **Extraction de liens** | HTML, SPA (Vue/React/Nuxt), JS dynamique |
-| 🕷️ **Scan de sitemap** | Découverte automatique via `sitemap.xml` + RSS |
-| 📄 **Lecture de documents** | PDF, JSON, CSV, XLSX, images |
-| 🔌 **Analyse d'APIs** | Détection, sondage, Swagger/OpenAPI |
-| 🛡️ **Analyse de sécurité** | Headers, CORS, CSP, HSTS, TLS |
-| 🇫🇷 **APIs françaises** | 15+ APIs publiques référencées |
-
----
-
-## ⚡ Fonctionnalités
-
-### 🔍 Extraction & Scan
-
-- **Scan récursif** de pages (profondeur configurable)
-- **Détection automatique de SPA** → bascule Puppeteer
-- **Fallback intelligent** : `undici` → `Puppeteer`
-- **Cache mémoire** TTL 5 min
-- **Concurrence configurable** (1-10 workers)
-
-### 📄 Extraction multimodale
-
-- **PDF** via `pdfjs-dist` (texte, métadonnées, URLs, emails)
-- **JSON** (structure, clés, URLs embarquées)
-- **CSV** (colonnes, lignes, séparateur auto)
-- **XLSX** (feuilles, dimensions, échantillons)
-
-### 🔌 Analyse d'APIs
-
-- **Détection d'endpoints** dans le JS (`fetch`, `axios`, `$.ajax`)
-- **Sondage REST** (GET/POST/PUT/DELETE)
-- **Analyse Swagger/OpenAPI** complète
-- **Catalogue de 15+ APIs** publiques françaises
-- **Vérification DNS** avec commandes de diagnostic
-
-### 🛡️ Cybersécurité
-
-- **Analyse des headers de sécurité** (HSTS, CSP, X-Frame-Options)
-- **Détection CORS** permissif
-- **Identification de frameworks** (Nuxt, Next.js)
-- **Extraction de secrets potentiels** (patterns d'API keys)
-
----
-
-## 🛡️ Sécurité
-
-### 🔒 Posture de sécurité
-
-| Aspect | État |
-|---|---|
-| **Dépendances** | 1 CVE moderate (non exploitable) |
-| **npm audit** | ✅ Passé (voir note ci-dessous) |
-| **TLS** | ✅ Vérification activée par défaut |
-| **User-Agent** | ✅ Réaliste (Chrome 122) |
-| **Timeouts** | ✅ Configurés (12-60s) |
-| **Sandbox Puppeteer** | ✅ `--no-sandbox` désactivé en prod |
-
-### 🚨 Note sur les CVE
-
-La CVE `csv-parse <7.0.2` (moderate) **n'est pas exploitable** dans notre contexte :
-- Elle nécessite qu'un attaquant contrôle **ET** l'option `columns` **ET** le CSV parsé
-- Nos CSV proviennent de sources publiques de confiance (data.gouv.fr, etc.)
-- Si exploitation : pollution de prototype locale, **pas d'exécution de code**
-
-### 🔐 Bonnes pratiques
-
-- ✅ Aucune clé API stockée en dur
-- ✅ Aucun secret en clair dans les logs
-- ✅ Validation des entrées utilisateur
-- ✅ Sanitization des headers avant affichage
-- ✅ Limitation du nombre d'URLs par scan (50-500)
-
-### 🛡️ Référentiels
-
-- [OWASP Top 10](https://owasp.org/www-project-top-ten/)
-- [ANSSI — Recommandations](https://www.ssi.gouv.fr/)
-- [CNIL — RGPD](https://www.cnil.fr/)
-- [MITRE ATT&CK](https://attack.mitre.org/)
+| 🔍 **Scan de page** | Extraction des liens, images, PDF, documents (profondeur configurable) |
+| 🕷️ **Scan complet** | Exploration via `sitemap.xml` et flux RSS, analyse en parallèle |
+| 🧠 **Détection de SPA** | Bascule automatique vers Puppeteer si le site nécessite JavaScript |
+| 📄 **Extraction de documents** | PDF (texte, URLs, emails), CSV, XLSX, JSON |
+| 🔌 **Analyse d'APIs** | Test manuel ou en masse du catalogue d'APIs publiques françaises |
+| 📘 **Analyse Swagger/OpenAPI** | Endpoints, schémas, authentification |
+| 🛡️ **Audit de sécurité** | HSTS, CSP, CORS, rate-limiting |
 
 ---
 
@@ -144,106 +49,34 @@ La CVE `csv-parse <7.0.2` (moderate) **n'est pas exploitable** dans notre contex
 
 ### Prérequis
 
-- **Node.js** ≥ 20 (testé sur 22.23.3)
-- **npm** ≥ 10
-- **Chromium** (installé automatiquement par Puppeteer)
+- **Node.js** ≥ 20
+- **npm** ≥ 9
 
 ### Étapes
 
 ```bash
-# 1. Cloner
-git clone https://github.com/votre-user/scanner-pro.git
-cd scanner-pro
+# Cloner / télécharger le projet
+cd scanner
 
-# 2. Installer
+# Installer les dépendances
 npm install
 
-# 3. Lancer
+# Démarrer le serveur
 npm start
 ```
 
-**Ouvrir** : http://localhost:3000
+Le serveur écoute sur **`http://localhost:3001`**.
 
-### Vérification
+### Mode développement
 
 ```bash
-# Health check
-curl http://localhost:3000/api/health
-
-# Résultat attendu
-{
-  "status": "ok",
-  "project": "scanner",
-  "version": "4.0.0",
-  "node": "v22.23.3",
-  "browser": false,
-  "cacheSize": 0
-}
+npm run dev   # redémarrage auto via --watch
 ```
 
----
-
-## 📖 Utilisation
-
-### 🖥️ Interface Web
-
-L'interface propose **3 modes** :
-
-| Mode | Icône | Description |
-|---|---|---|
-| **Scan** | 🛰️ | Scan d'une page + sous-pages |
-| **Complet** | 🕷️ | Scan via sitemap.xml + RSS |
-| **APIs** | 🔌 | Test d'APIs + catalogue |
-
-### 🔧 API REST
-
-#### 1. Scan simple
+### Tests
 
 ```bash
-curl -X POST http://localhost:3000/api/scan \
-  -H "Content-Type: application/json" \
-  -d '{
-    "url": "https://www.data.gouv.fr/fr/",
-    "depth": 1,
-    "maxPages": 5,
-    "useBrowser": true
-  }'
-```
-
-#### 2. Scan complet (sitemap)
-
-```bash
-curl -X POST http://localhost:3000/api/scan-full \
-  -H "Content-Type: application/json" \
-  -d '{
-    "url": "https://www.data.gouv.fr",
-    "maxUrls": 50,
-    "concurrency": 3,
-    "includeRSS": true
-  }'
-```
-
-#### 3. Extraction de documents
-
-```bash
-curl -X POST http://localhost:3000/api/extract \
-  -H "Content-Type: application/json" \
-  -d '{
-    "urls": [
-      "https://example.com/rapport.pdf",
-      "https://example.com/data.json"
-    ]
-  }'
-```
-
-#### 4. Analyse Swagger
-
-```bash
-curl -X POST http://localhost:3000/api/analyze-swagger \
-  -H "Content-Type: application/json" \
-  -d '{
-    "url": "https://raw.githubusercontent.com/betagouv/api_gouv_swaggers/main/swaggers/api-ficoba3.json"
-  }'
+npm test
 ```
 
 ---
@@ -251,200 +84,232 @@ curl -X POST http://localhost:3000/api/analyze-swagger \
 ## 🏗️ Architecture
 
 ```
-scanner-pro/
-├── server.js              # Backend Express (10+ endpoints)
-├── extractors.js          # Module d'extraction (PDF, JSON, CSV, XLSX, sitemap)
-├── apis-catalog.js        # Catalogue des APIs françaises
-├── package.json           # Dépendances
+scanner/
+├── server.js           # Serveur Express + routes API
+├── extractors.js       # Extraction PDF/JSON/CSV/XLSX, sitemap, RSS
+├── utils.js            # Helpers partagés (SSRF, JSON, erreurs)
+├── apis-catalog.js     # Catalogue d'APIs publiques françaises
+├── tests/
+│   └── utils.test.js   # Tests unitaires
 └── public/
-    └── index.html         # Interface utilisateur (SPA vanilla)
+    └── index.html      # Interface web
 ```
-
-### 🔄 Flow de scan
-
-```
-[User] → [UI] → POST /api/scan
-         ↓
-    [Express] → detect SPA
-         ↓
-    ┌────────┴────────┐
-    ↓                 ↓
-[undici]         [Puppeteer]
-(rapide)         (SPA/WAF)
-    ↓                 ↓
-    └────────┬────────┘
-             ↓
-        [Cheerio]
-             ↓
-    [Extraction links/images/docs]
-             ↓
-        [Scoring]
-             ↓
-    [Cache + JSON response]
-             ↓
-           [UI]
-```
-
-### 📦 Stack technique
-
-| Couche | Techno | Version |
-|---|---|---|
-| **Runtime** | Node.js | 22.x |
-| **Serveur** | Express | 4.21.2 |
-| **HTTP** | undici | 8.11.2 |
-| **Navigateur** | Puppeteer | 25.12.0 |
-| **Parsing HTML** | Cheerio | 1.0.0 |
-| **PDF** | pdfjs-dist | 4.7.76 |
-| **Excel** | ExcelJS | 4.4.0 |
-| **CSV** | csv-parse | 5.6.0 |
 
 ---
 
-## 🇫🇷 APIs supportées
+## 🔌 API
 
-| API | Catégorie | Auth | Doc |
-|---|---|---|---|
-| **Recherche d'Entreprises** | Entreprises | Public | [docs](https://recherche-entreprises.api.gouv.fr/docs) |
-| **INSEE Sirene** | Entreprises | Token | [docs](https://api.insee.fr/catalogue/) |
-| **BAN (Adresse)** | Adresses | Public | [docs](https://adresse.data.gouv.fr/api-doc/adresse) |
-| **Géo API** | Adresses | Public | [docs](https://geo.api.gouv.fr/decoupage-administratif) |
-| **Légifrance** | Justice | OAuth | [docs](https://developer.aife.economie.gouv.fr/) |
-| **Data Éducation** | Éducation | Public | [docs](https://data.education.gouv.fr/) |
-| **Géorisques** | Environnement | Public | [docs](https://www.georisques.gouv.fr/doc-api) |
-| **ADEME** | Environnement | Public | [docs](https://data.ademe.fr/) |
-| **Transport.data** | Transport | Public | [docs](https://transport.data.gouv.fr/) |
-| **Data Économie** | Économie | Public | [docs](https://data.economie.gouv.fr/) |
-| **Data Santé** | Santé | Public | [docs](https://data.drees.solidarites-sante.gouv.fr/) |
-| **Data Culture** | Culture | Public | [docs](https://data.culture.gouv.fr/) |
-| **data.gouv.fr** | Open Data | Public | [docs](https://doc.data.gouv.fr/api/intro/) |
-| **FICOBA v2** | Bancaire | 🔐 Privé | [Swagger](https://github.com/betagouv/api_gouv_swaggers) |
+### `POST /api/scan`
+
+Analyse une page et ses sous-pages.
+
+**Body :**
+
+```json
+{
+  "url": "https://example.com",
+  "depth": 1,
+  "maxPages": 5,
+  "useBrowser": true,
+  "skipCache": false
+}
+```
+
+**Limites :** `depth` ≤ 3, `maxPages` ≤ 200.
 
 ---
 
-## ⚖️ Conformité légale
+### `POST /api/scan-full`
 
-### 📜 Textes applicables
+Scan complet via sitemap + RSS.
 
-| Texte | Portée |
+**Body :**
+
+```json
+{
+  "url": "https://example.com",
+  "maxUrls": 50,
+  "concurrency": 3,
+  "includeRSS": true
+}
+```
+
+**Limites :** `maxUrls` ≤ 500, `concurrency` ≤ 10.
+
+---
+
+### `POST /api/extract`
+
+Extrait le contenu de documents (PDF, CSV, XLSX, JSON).
+
+**Body :**
+
+```json
+{
+  "urls": ["https://example.com/doc.pdf", "https://example.com/data.csv"]
+}
+```
+
+---
+
+### `POST /api/probe-rest`
+
+Teste un endpoint API manuellement.
+
+**Body :**
+
+```json
+{
+  "url": "https://api.example.com/v1/users",
+  "method": "GET",
+  "headers": {},
+  "body": null,
+  "insecure": false
+}
+```
+
+---
+
+### `POST /api/probe-catalog`
+
+Teste en masse les APIs du catalogue.
+
+**Body :**
+
+```json
+{
+  "category": "Entreprises",
+  "maxApis": 15
+}
+```
+
+---
+
+### `GET /api/apis-catalog`
+
+Retourne le catalogue complet des APIs publiques.
+
+---
+
+### `GET /api/health`
+
+Statut du serveur.
+
+```json
+{
+  "status": "ok",
+  "project": "scanner",
+  "version": "4.0.0",
+  "node": "v20.x.x",
+  "browser": true,
+  "cacheSize": 0,
+  "rateLimitEntries": 0
+}
+```
+
+---
+
+## 🔒 Sécurité
+
+### Protection SSRF
+
+Toutes les URLs sont validées avant d'être contactées :
+
+- ❌ `localhost`, `127.0.0.1`, `::1`
+- ❌ Plages privées : `10.x`, `192.168.x`, `172.16–31.x`
+- ❌ Metadata cloud : `169.254.169.254`
+- ❌ Domaines internes : `.local`, `.internal`
+- ❌ Protocoles non HTTP(S) : `file://`, `ftp://`, `javascript:`
+
+### Rate limiting
+
+**30 requêtes/minute par IP** sur les routes POST coûteuses.
+
+### Limites dures
+
+| Ressource | Limite |
 |---|---|
-| **Art. 323-1 Code pénal** | Accès non autorisé à un STAD → 3 ans + 100 000 € |
-| **Art. 226-18 Code pénal** | Collecte frauduleuse de données personnelles |
-| **RGPD (UE 2016/679)** | Traitement des données personnelles |
-| **Loi Informatique et Libertés** | Application française du RGPD |
-| **Code de la propriété intellectuelle** | Respect des droits d'auteur |
+| Profondeur de scan | 3 |
+| Pages par scan | 200 |
+| URLs par scan complet | 500 |
+| Concurrence | 10 |
+| URLs par extraction | 50 |
 
-### ✅ Utilisation conforme
+---
 
-- Audit de **vos propres** systèmes
-- Tests d'intrusion **avec mandat écrit**
-- Recherche en sécurité (bug bounty, CTF)
-- Analyse de **données publiques** (open data)
-- Formation et éducation
+## ⚖️ Cadre légal
 
-### ❌ Utilisation interdite
+Cet outil est conçu pour un usage **strictement légal** :
 
-- Scan sans autorisation d'un tiers
-- Contournement d'authentification
-- Attaque DoS / DDoS
-- Collecte massive de données personnelles
-- Revente de données extraites
+### ✅ Autorisé
 
-### 🛡️ Recommandations
+- Audit de vos propres systèmes
+- Analyse de données publiques dans le respect des CGU
+- Tests de sécurité avec autorisation écrite
 
-1. **Documenter chaque scan** (URL, date, autorisation)
-2. **Respecter `robots.txt`** — vérifier avant scan
-3. **Limiter la concurrence** (max 5 requêtes parallèles)
-4. **Utiliser un User-Agent identifiant** en production
-5. **Ne jamais publier** les données extraites sans consentement
+### ❌ Interdit
+
+- Scanner des sites sans autorisation
+- Contourner des protections d'accès
+- Collecter des données personnelles sans base légale
+- Toute utilisation contraire aux CGU du site cible
+
+> En France, l'accès ou le maintien frauduleux dans un système de traitement automatisé de données est puni par l'**article 323-1 du Code pénal** (jusqu'à 3 ans d'emprisonnement et 100 000 € d'amende).
+
+---
+
+## 🛠️ Stack technique
+
+| Composant | Rôle |
+|---|---|
+| **Node.js** ≥ 20 | Runtime |
+| **Express** 4 | Serveur HTTP |
+| **undici** | Client HTTP performant |
+| **Puppeteer** | Navigateur headless pour SPA |
+| **cheerio** | Parsing HTML/XML |
+| **pdfjs-dist** | Extraction PDF |
+| **exceljs** | Lecture XLSX |
+| **csv-parse** | Parsing CSV |
+
+---
+
+## 🧪 Tests
+
+```bash
+npm test
+```
+
+Les tests couvrent :
+
+- Validation SSRF (`validateTargetUrl`)
+- Sécurité des liens (`safeHref`)
+- Bornes numériques (`clamp`)
+- Analyse JSON (`summarizeJSON`, `analyzeJSONStructure`)
+- Détection d'indices API (`detectAPIHints`)
+- Analyse de sécurité HTTP (`analyzeSecurity`)
 
 ---
 
 ## 🤝 Contribuer
 
-Les contributions sont bienvenues :
+Les contributions sont bienvenues !
 
-1. **Fork** le projet
-2. **Créer une branche** (`git checkout -b feature/amelioration`)
-3. **Commit** (`git commit -m 'Ajout fonctionnalité X'`)
-4. **Push** (`git push origin feature/amelioration`)
-5. **Ouvrir une Pull Request**
-
-### 🐛 Signaler un bug
-
-Utiliser les [issues GitHub](https://github.com/votre-user/scanner-pro/issues) avec :
-- Version de Node
-- Commande exacte
-- Sortie d'erreur complète
-- Comportement attendu
-
-### 🔒 Signaler une faille
-
-**Ne pas ouvrir d'issue publique.** Envoyer un email à `security@example.com`.
+1. Forkez le projet
+2. Créez une branche (`git checkout -b feature/amelioration`)
+3. Committez (`git commit -m 'Ajout fonctionnalité'`)
+4. Pushez (`git push origin feature/amelioration`)
+5. Ouvrez une Pull Request
 
 ---
 
-## 📊 Roadmap
+## 📝 Licence
 
-- [x] v1 — Scanner simple
-- [x] v2 — Fallback Puppeteer
-- [x] v3 — Extraction PDF/JSON/CSV/XLSX
-- [x] v3.1 — Analyse Swagger
-- [x] v4 — Sitemap + catalogue APIs
-- [ ] v5 — Base SQLite + historique
-- [ ] v5.1 — Export Excel avec graphiques
-- [ ] v5.2 — Authentification utilisateur
-- [ ] v5.3 — Dockerisation
-- [ ] v6 — Détection de secrets/API keys
-- [ ] v6.1 — Mode "pentest" (XSS, SQLi, etc.)
+**Usage personnel et éducatif.**
+
+L'auteur décline toute responsabilité en cas d'utilisation abusive. Voir la section [Cadre légal](#️-cadre-légal).
 
 ---
 
-## 📜 Licence
-
-**MIT License**
-
-```
-Copyright (c) 2026 Scanner Pro
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
-
----
-
-## 🙏 Remerciements
-
-- [betagouv](https://github.com/betagouv) — Pour les Swaggers d'APIs publiques
-- [data.gouv.fr](https://www.data.gouv.fr/) — Pour les données ouvertes
-- [Puppeteer](https://pptr.dev/) — Pour le rendu headless
-- [Cheerio](https://cheerio.js.org/) — Pour le parsing HTML
-- Communauté open source française 🇫🇷
-
----
-
-<div align="center">
-
-**Fait avec ❤️ en France**
-
-[![Liberté](https://img.shields.io/badge/Liberté-0055A4?style=for-the-badge)](https://www.gouvernement.fr/)
-[![Égalité](https://img.shields.io/badge/Égalité-FFFFFF?style=for-the-badge&labelColor=black)](https://www.gouvernement.fr/)
-[![Fraternité](https://img.shields.io/badge/Fraternité-EF4135?style=for-the-badge)](https://www.gouvernement.fr/)
-
-*« La cybersécurité est l'affaire de tous »*
-
-</div>
+<p align="center">
+  <sub>Fait avec ❤️ pour la communauté open source</sub>
+</p>
