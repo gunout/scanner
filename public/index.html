@@ -3,24 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Scanner Pro — Service numérique de l'État</title>
-<meta name="description" content="Plateforme officielle d'analyse et de reconnaissance des services numériques publics.">
+<title>Scanner Pro — Analyse de sites web</title>
+<meta name="description" content="Outil d'analyse technique : extraction de liens, détection d'APIs, audit de sécurité.">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-  /* ═══════════════════════════════════════════════════════════
-     SYSTÈME DE DESIGN DE L'ÉTAT (DSFR simplifié)
-     Basé sur https://www.systeme-de-design.gouv.fr/
-     ═══════════════════════════════════════════════════════════ */
-
   :root {
-    /* Couleurs officielles de l'État */
-    --bleu-france: #000091;
-    --bleu-france-hover: #1212ff;
-    --bleu-clair: #6a6af4;
-    --rouge-marianne: #e1000f;
-    --rouge-marianne-hover: #c9191e;
+    --couleur-primaire: #2c3e8f;
+    --couleur-primaire-hover: #1f2d6b;
+    --couleur-accent: #c0392b;
+    --couleur-accent-hover: #a32e22;
 
-    /* Neutres */
     --gris-50: #f6f6f6;
     --gris-100: #ededed;
     --gris-200: #e3e3fd;
@@ -29,7 +21,6 @@
     --gris-900: #1e1e1e;
     --blanc: #ffffff;
 
-    /* Sémantique */
     --succes: #18753c;
     --succes-bg: #b8fec9;
     --info: #0063cb;
@@ -39,30 +30,21 @@
     --erreur: #ce0500;
     --erreur-bg: #ffdedd;
 
-    /* Typographie */
-    --font-main: 'Marianne', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --font-main: 'Segoe UI', system-ui, -apple-system, sans-serif;
     --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
 
-    /* Espacement */
     --space-xs: 4px;
     --space-sm: 8px;
     --space-md: 16px;
     --space-lg: 24px;
     --space-xl: 32px;
-    --space-2xl: 48px;
 
-    /* Ombres */
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
     --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
     --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.10);
   }
 
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-
+  * { margin: 0; padding: 0; box-sizing: border-box; }
   html { scroll-behavior: smooth; }
 
   body {
@@ -77,12 +59,11 @@
     flex-direction: column;
   }
 
-  /* ═══════════════ SKIP LINK (accessibilité RGAA) ═══════════════ */
   .skip-link {
     position: absolute;
     top: -40px;
     left: 0;
-    background: var(--bleu-france);
+    background: var(--couleur-primaire);
     color: white;
     padding: 8px 16px;
     text-decoration: none;
@@ -91,94 +72,11 @@
   }
   .skip-link:focus { top: 0; }
 
-  /* ═══════════════ EN-TÊTE OFFICIEL DE L'ÉTAT ═══════════════ */
-  .header-etat {
-    background: white;
-    border-bottom: 1px solid var(--gris-200);
-  }
-
-  /* Bandeau "République Française" */
-  .bandeau-rf {
-    background: var(--blanc);
-    padding: 8px 0;
-    border-bottom: 1px solid var(--gris-100);
-  }
-
-  .bandeau-rf-inner {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 16px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 0.875rem;
-  }
-
-  .bloc-marque {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    text-decoration: none;
-    color: var(--gris-900);
-  }
-
-  .marianne-svg {
-    width: 60px;
-    height: 68px;
-    flex-shrink: 0;
-  }
-
-  .bloc-marque-texte {
-    display: flex;
-    flex-direction: column;
-    line-height: 1.2;
-  }
-
-  .bloc-marque-texte strong {
-    font-weight: 700;
-    font-size: 1.05rem;
-    letter-spacing: -0.01em;
-  }
-
-  .bloc-marque-texte span {
-    font-size: 0.75rem;
-    color: var(--gris-500);
-    letter-spacing: 0.02em;
-  }
-
-  /* Devise */
-  .devise {
-    margin-left: auto;
-    display: flex;
-    gap: 8px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-
-  .devise span:nth-child(1) { color: var(--bleu-france); }
-  .devise span:nth-child(2) { color: var(--gris-500); }
-  .devise span:nth-child(3) { color: var(--rouge-marianne); }
-
-  /* En-tête principal */
   .header-principal {
-    background: linear-gradient(135deg, var(--bleu-france) 0%, #1212a0 100%);
+    background: linear-gradient(135deg, var(--couleur-primaire) 0%, #1f2d6b 100%);
     color: white;
     padding: 32px 16px;
     position: relative;
-    overflow: hidden;
-  }
-
-  .header-principal::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 4px;
-    background: linear-gradient(90deg,
-      var(--bleu-france) 0%, var(--bleu-france) 33.33%,
-      white 33.33%, white 66.66%,
-      var(--rouge-marianne) 66.66%, var(--rouge-marianne) 100%);
   }
 
   .header-principal-inner {
@@ -189,8 +87,6 @@
     justify-content: space-between;
     gap: 24px;
     flex-wrap: wrap;
-    position: relative;
-    z-index: 1;
   }
 
   .header-principal h1 {
@@ -205,7 +101,7 @@
 
   .header-principal h1 .badge-officiel {
     background: white;
-    color: var(--bleu-france);
+    color: var(--couleur-primaire);
     font-size: 0.7rem;
     font-weight: 800;
     padding: 3px 8px;
@@ -247,7 +143,6 @@
     border-color: white;
   }
 
-  /* ═══════════════ CONTENEUR PRINCIPAL ═══════════════ */
   .conteneur {
     max-width: 1200px;
     margin: 0 auto;
@@ -256,7 +151,6 @@
     flex: 1;
   }
 
-  /* Grille */
   .grille-principale {
     display: grid;
     grid-template-columns: 360px 1fr;
@@ -264,13 +158,9 @@
   }
 
   @media (max-width: 1024px) {
-    .grille-principale {
-      grid-template-columns: 1fr;
-      gap: 24px;
-    }
+    .grille-principale { grid-template-columns: 1fr; gap: 24px; }
   }
 
-  /* ═══════════════ COLONNE LATÉRALE ═══════════════ */
   .colonne-laterale {
     display: flex;
     flex-direction: column;
@@ -288,7 +178,7 @@
   .carte-titre {
     font-size: 1rem;
     font-weight: 700;
-    color: var(--bleu-france);
+    color: var(--couleur-primaire);
     margin-bottom: 16px;
     padding-bottom: 12px;
     border-bottom: 2px solid var(--gris-100);
@@ -297,15 +187,9 @@
     gap: 10px;
   }
 
-  .carte-titre i {
-    color: var(--rouge-marianne);
-    font-size: 1.1rem;
-  }
+  .carte-titre i { color: var(--couleur-accent); font-size: 1.1rem; }
 
-  /* Champs de formulaire (DSFR) */
-  .champ-groupe {
-    margin-bottom: 16px;
-  }
+  .champ-groupe { margin-bottom: 16px; }
 
   .champ-label {
     display: block;
@@ -315,14 +199,9 @@
     margin-bottom: 6px;
   }
 
-  .champ-label .obligatoire {
-    color: var(--erreur);
-    margin-left: 2px;
-  }
+  .champ-label .obligatoire { color: var(--erreur); margin-left: 2px; }
 
-  .champ-input,
-  .champ-select,
-  .champ-textarea {
+  .champ-input, .champ-select, .champ-textarea {
     width: 100%;
     padding: 10px 12px;
     font-family: var(--font-main);
@@ -334,12 +213,10 @@
     transition: all 0.2s;
   }
 
-  .champ-input:focus,
-  .champ-select:focus,
-  .champ-textarea:focus {
+  .champ-input:focus, .champ-select:focus, .champ-textarea:focus {
     outline: none;
-    border-color: var(--bleu-france);
-    box-shadow: 0 0 0 2px rgba(0, 0, 145, 0.15);
+    border-color: var(--couleur-primaire);
+    box-shadow: 0 0 0 2px rgba(44, 62, 143, 0.15);
   }
 
   .champ-textarea {
@@ -356,7 +233,6 @@
     margin-top: 4px;
   }
 
-  /* Cases à cocher */
   .champ-checkbox {
     display: flex;
     align-items: center;
@@ -368,11 +244,10 @@
   .champ-checkbox input {
     width: 18px;
     height: 18px;
-    accent-color: var(--bleu-france);
+    accent-color: var(--couleur-primaire);
     cursor: pointer;
   }
 
-  /* Boutons (DSFR) */
   .btn {
     display: inline-flex;
     align-items: center;
@@ -391,37 +266,21 @@
     width: 100%;
   }
 
-  .btn-primaire {
-    background: var(--bleu-france);
-    color: white;
-  }
-
-  .btn-primaire:hover:not(:disabled) {
-    background: var(--bleu-france-hover);
-  }
+  .btn-primaire { background: var(--couleur-primaire); color: white; }
+  .btn-primaire:hover:not(:disabled) { background: var(--couleur-primaire-hover); }
 
   .btn-secondaire {
     background: white;
-    color: var(--bleu-france);
-    border: 1px solid var(--bleu-france);
+    color: var(--couleur-primaire);
+    border: 1px solid var(--couleur-primaire);
   }
 
-  .btn-secondaire:hover:not(:disabled) {
-    background: var(--gris-50);
-  }
+  .btn-secondaire:hover:not(:disabled) { background: var(--gris-50); }
 
-  .btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-  .btn-group {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
+  .btn-group { display: flex; flex-direction: column; gap: 8px; }
 
-  /* Statistiques */
   .stats-grille {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -433,13 +292,13 @@
     border-radius: 4px;
     padding: 12px 8px;
     text-align: center;
-    border-left: 3px solid var(--bleu-france);
+    border-left: 3px solid var(--couleur-primaire);
   }
 
   .stat-valeur {
     font-size: 1.5rem;
     font-weight: 800;
-    color: var(--bleu-france);
+    color: var(--couleur-primaire);
     line-height: 1;
     font-variant-numeric: tabular-nums;
   }
@@ -453,7 +312,6 @@
     margin-top: 6px;
   }
 
-  /* ═══════════════ COLONNE PRINCIPALE ═══════════════ */
   .colonne-principale {
     display: flex;
     flex-direction: column;
@@ -461,7 +319,6 @@
     min-width: 0;
   }
 
-  /* Onglets (DSFR) */
   .onglets {
     display: flex;
     gap: 0;
@@ -488,20 +345,15 @@
   }
 
   .onglet:hover {
-    color: var(--bleu-france);
+    color: var(--couleur-primaire);
     background: var(--gris-50);
   }
 
   .onglet.actif {
-    color: var(--bleu-france);
-    border-bottom-color: var(--bleu-france);
+    color: var(--couleur-primaire);
+    border-bottom-color: var(--couleur-primaire);
   }
 
-  .onglet i {
-    font-size: 1rem;
-  }
-
-  /* Panneau de contenu */
   .panneau {
     background: white;
     border: 1px solid var(--gris-200);
@@ -524,7 +376,7 @@
   .panneau-titre {
     font-size: 1.25rem;
     font-weight: 700;
-    color: var(--bleu-france);
+    color: var(--couleur-primaire);
     display: flex;
     align-items: center;
     gap: 10px;
@@ -539,7 +391,6 @@
     font-weight: 600;
   }
 
-  /* ═══════════════ TABLEAU ═══════════════ */
   .tableau-wrapper {
     overflow-x: auto;
     border: 1px solid var(--gris-200);
@@ -555,7 +406,7 @@
   }
 
   .tableau thead {
-    background: var(--bleu-france);
+    background: var(--couleur-primaire);
     color: white;
   }
 
@@ -575,33 +426,21 @@
     vertical-align: middle;
   }
 
-  .tableau tbody tr:hover {
-    background: var(--gris-50);
-  }
-
-  .tableau tbody tr:last-child td {
-    border-bottom: none;
-  }
+  .tableau tbody tr:hover { background: var(--gris-50); }
+  .tableau tbody tr:last-child td { border-bottom: none; }
 
   .cellule-url {
     font-family: var(--font-mono);
     font-size: 0.78rem;
-    color: var(--bleu-france);
+    color: var(--couleur-primaire);
     word-break: break-all;
     max-width: 450px;
     line-height: 1.4;
   }
 
-  .cellule-url a {
-    color: inherit;
-    text-decoration: none;
-  }
+  .cellule-url a { color: inherit; text-decoration: none; }
+  .cellule-url a:hover { text-decoration: underline; }
 
-  .cellule-url a:hover {
-    text-decoration: underline;
-  }
-
-  /* ═══════════════ BADGES ═══════════════ */
   .badge {
     display: inline-block;
     padding: 3px 10px;
@@ -619,12 +458,7 @@
   .badge-image { background: var(--attention-bg); color: var(--attention); }
   .badge-doc { background: var(--succes-bg); color: var(--succes); }
 
-  /* ═══════════════ PERTINENCE ═══════════════ */
-  .pertinence {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+  .pertinence { display: flex; align-items: center; gap: 8px; }
 
   .pertinence-barre {
     width: 60px;
@@ -636,7 +470,7 @@
 
   .pertinence-remplissage {
     height: 100%;
-    background: linear-gradient(90deg, var(--bleu-france), var(--rouge-marianne));
+    background: linear-gradient(90deg, var(--couleur-primaire), var(--couleur-accent));
   }
 
   .pertinence-valeur {
@@ -647,7 +481,6 @@
     min-width: 32px;
   }
 
-  /* ═══════════════ PAGINATION ═══════════════ */
   .pagination {
     display: flex;
     justify-content: center;
@@ -673,15 +506,12 @@
   }
 
   .pagination button:hover:not(:disabled) {
-    background: var(--bleu-france);
-    border-color: var(--bleu-france);
+    background: var(--couleur-primaire);
+    border-color: var(--couleur-primaire);
     color: white;
   }
 
-  .pagination button:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
+  .pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
 
   .pagination-info {
     font-size: 0.875rem;
@@ -690,7 +520,6 @@
     padding: 0 12px;
   }
 
-  /* ═══════════════ CHARGEMENT ═══════════════ */
   .chargement {
     text-align: center;
     padding: 60px 20px;
@@ -702,14 +531,13 @@
     height: 40px;
     margin: 0 auto 16px;
     border: 3px solid var(--gris-100);
-    border-top-color: var(--bleu-france);
+    border-top-color: var(--couleur-primaire);
     border-radius: 50%;
     animation: spin 0.9s linear infinite;
   }
 
   @keyframes spin { 100% { transform: rotate(360deg); } }
 
-  /* ═══════════════ ALERTES ═══════════════ */
   .alerte {
     padding: 14px 16px;
     border-radius: 4px;
@@ -720,36 +548,13 @@
     align-items: flex-start;
   }
 
-  .alerte i {
-    font-size: 1.1rem;
-    margin-top: 1px;
-  }
+  .alerte i { font-size: 1.1rem; margin-top: 1px; }
 
-  .alerte-erreur {
-    background: var(--erreur-bg);
-    border-left: 4px solid var(--erreur);
-    color: #5f0000;
-  }
+  .alerte-erreur { background: var(--erreur-bg); border-left: 4px solid var(--erreur); color: #5f0000; }
+  .alerte-info { background: var(--info-bg); border-left: 4px solid var(--info); color: #002a5e; }
+  .alerte-succes { background: var(--succes-bg); border-left: 4px solid var(--succes); color: #0f3d20; }
+  .alerte-attention { background: var(--attention-bg); border-left: 4px solid var(--attention); color: #5a2000; }
 
-  .alerte-info {
-    background: var(--info-bg);
-    border-left: 4px solid var(--info);
-    color: #002a5e;
-  }
-
-  .alerte-succes {
-    background: var(--succes-bg);
-    border-left: 4px solid var(--succes);
-    color: #0f3d20;
-  }
-
-  .alerte-attention {
-    background: var(--attention-bg);
-    border-left: 4px solid var(--attention);
-    color: #5a2000;
-  }
-
-  /* ═══════════════ NOTIFICATIONS (toasts) ═══════════════ */
   .notifications {
     position: fixed;
     bottom: 24px;
@@ -765,7 +570,7 @@
     background: white;
     padding: 14px 18px;
     border-radius: 4px;
-    border-left: 4px solid var(--bleu-france);
+    border-left: 4px solid var(--couleur-primaire);
     box-shadow: var(--shadow-lg);
     font-size: 0.875rem;
     font-weight: 500;
@@ -781,7 +586,6 @@
     to { transform: translateX(0); opacity: 1; }
   }
 
-  /* ═══════════════ PIED DE PAGE OFFICIEL ═══════════════ */
   .footer-etat {
     background: var(--gris-50);
     border-top: 1px solid var(--gris-200);
@@ -789,10 +593,7 @@
     margin-top: auto;
   }
 
-  .footer-inner {
-    max-width: 1200px;
-    margin: 0 auto;
-  }
+  .footer-inner { max-width: 1200px; margin: 0 auto; }
 
   .footer-grille {
     display: grid;
@@ -810,13 +611,8 @@
     letter-spacing: 0.05em;
   }
 
-  .footer-colonne ul {
-    list-style: none;
-  }
-
-  .footer-colonne li {
-    margin-bottom: 8px;
-  }
+  .footer-colonne ul { list-style: none; }
+  .footer-colonne li { margin-bottom: 8px; }
 
   .footer-colonne a {
     color: var(--gris-700);
@@ -825,10 +621,7 @@
     transition: color 0.2s;
   }
 
-  .footer-colonne a:hover {
-    color: var(--bleu-france);
-    text-decoration: underline;
-  }
+  .footer-colonne a:hover { color: var(--couleur-primaire); text-decoration: underline; }
 
   .footer-bas {
     padding-top: 24px;
@@ -848,20 +641,6 @@
     color: var(--gris-700);
   }
 
-  .footer-devise {
-    display: flex;
-    gap: 8px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-
-  .footer-devise span:nth-child(1) { color: var(--bleu-france); }
-  .footer-devise span:nth-child(2) { color: var(--gris-500); }
-  .footer-devise span:nth-child(3) { color: var(--rouge-marianne); }
-
-  /* ═══════════════ BANDEAU BETA / INFO ═══════════════ */
   .bandeau-info {
     background: var(--info-bg);
     border-left: 4px solid var(--info);
@@ -875,12 +654,8 @@
     border-radius: 4px;
   }
 
-  .bandeau-info i {
-    color: var(--info);
-    font-size: 1.1rem;
-  }
+  .bandeau-info i { color: var(--info); font-size: 1.1rem; }
 
-  /* ═══════════════ ACCESSIBILITÉ ═══════════════ */
   .sr-only {
     position: absolute;
     width: 1px;
@@ -893,14 +668,12 @@
   }
 
   *:focus-visible {
-    outline: 2px solid var(--bleu-france);
+    outline: 2px solid var(--couleur-primaire);
     outline-offset: 2px;
   }
 
-  /* ═══════════════ RESPONSIVE ═══════════════ */
   @media (max-width: 768px) {
     .header-principal h1 { font-size: 1.35rem; }
-    .devise { display: none; }
     .header-principal-inner { flex-direction: column; align-items: flex-start; }
     .header-actions { width: 100%; }
     .btn-header { flex: 1; justify-content: center; }
@@ -910,110 +683,48 @@
 </head>
 <body>
 
-<!-- Lien d'évitement (accessibilité) -->
 <a href="#contenu-principal" class="skip-link">Aller au contenu principal</a>
 
-<!-- ═══════════════════════════════════════════════════════════
-     EN-TÊTE OFFICIEL DE L'ÉTAT
-     ═══════════════════════════════════════════════════════════ -->
-
-<header class="header-etat">
-  <!-- Bandeau République Française -->
-  <div class="bandeau-rf">
-    <div class="bandeau-rf-inner">
-      <a href="https://www.gouvernement.fr/" class="bloc-marque" target="_blank" rel="noopener">
-        <!-- Marianne SVG officielle simplifiée -->
-        <svg class="marianne-svg" viewBox="0 0 60 68" xmlns="http://www.w3.org/2000/svg" aria-label="Marianne">
-          <defs>
-            <linearGradient id="visage" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#2a2a2a"/>
-              <stop offset="100%" stop-color="#1a1a1a"/>
-            </linearGradient>
-          </defs>
-          <!-- Cheveux -->
-          <path d="M 12 30 Q 10 10 30 8 Q 50 10 48 30 L 48 42 Q 46 30 40 28 L 20 28 Q 14 30 12 42 Z" fill="#1a1a1a"/>
-          <!-- Visage -->
-          <ellipse cx="30" cy="38" rx="14" ry="17" fill="url(#visage)"/>
-          <!-- Yeux -->
-          <circle cx="24" cy="36" r="1.5" fill="white"/>
-          <circle cx="36" cy="36" r="1.5" fill="white"/>
-          <!-- Nez -->
-          <path d="M 30 38 L 30 44 L 32 44" stroke="white" stroke-width="0.8" fill="none" opacity="0.6"/>
-          <!-- Bouche -->
-          <path d="M 26 48 Q 30 50 34 48" stroke="white" stroke-width="0.8" fill="none" opacity="0.6"/>
-          <!-- Cou -->
-          <path d="M 24 54 L 26 62 L 34 62 L 36 54 Z" fill="url(#visage)"/>
-          <!-- Épaules / buste -->
-          <path d="M 10 68 Q 12 58 24 56 L 36 56 Q 48 58 50 68 Z" fill="#1a1a1a"/>
-          <!-- Bandeau tricolore -->
-          <rect x="12" y="62" width="36" height="2" fill="#000091"/>
-          <rect x="24" y="62" width="12" height="2" fill="#ffffff"/>
-          <rect x="36" y="62" width="12" height="2" fill="#e1000f"/>
-        </svg>
-        <div class="bloc-marque-texte">
-          <strong>République Française</strong>
-          <span>Liberté · Égalité · Fraternité</span>
-        </div>
-      </a>
-      <div class="devise" aria-hidden="true">
-        <span>Liberté</span>
-        <span>•</span>
-        <span>Égalité</span>
-        <span>•</span>
-        <span>Fraternité</span>
-      </div>
+<header class="header-principal">
+  <div class="header-principal-inner">
+    <div>
+      <h1>
+        <i class="fas fa-shield-halved" aria-hidden="true"></i>
+        Scanner Pro
+        <span class="badge-officiel">Bêta</span>
+      </h1>
+      <p>
+        Outil d'analyse technique : extraction de liens, détection d'APIs
+        et audit de sécurité. À utiliser uniquement sur des sites que vous
+        êtes autorisé à analyser.
+      </p>
     </div>
-  </div>
-
-  <!-- En-tête principal du service -->
-  <div class="header-principal">
-    <div class="header-principal-inner">
-      <div>
-        <h1>
-          <i class="fas fa-shield-halved" aria-hidden="true"></i>
-          Scanner Pro
-          <span class="badge-officiel">Service numérique</span>
-        </h1>
-        <p>
-          Plateforme officielle d'analyse et de reconnaissance des services numériques
-          publics — extraction de liens, analyse d'APIs et audit de sécurité.
-        </p>
-      </div>
-      <div class="header-actions">
-        <a href="#documentation" class="btn-header">
-          <i class="fas fa-book"></i> Documentation
-        </a>
-        <a href="#accessibilite" class="btn-header">
-          <i class="fas fa-universal-access"></i> Accessibilité
-        </a>
-      </div>
+    <div class="header-actions">
+      <a href="#documentation" class="btn-header">
+        <i class="fas fa-book"></i> Documentation
+      </a>
+      <a href="#accessibilite" class="btn-header">
+        <i class="fas fa-universal-access"></i> Accessibilité
+      </a>
     </div>
   </div>
 </header>
 
-<!-- ═══════════════════════════════════════════════════════════
-     CONTENU PRINCIPAL
-     ═══════════════════════════════════════════════════════════ -->
-
 <main class="conteneur" id="contenu-principal">
 
-  <!-- Bandeau d'information -->
   <div class="bandeau-info" role="status">
     <i class="fas fa-circle-info" aria-hidden="true"></i>
     <div>
-      <strong>Service en version bêta.</strong>
-      Cet outil est destiné à un usage <strong>strictement légal</strong> — audit de vos propres
-      infrastructures ou de données publiques. Consultez les
-      <a href="#mentions-legales" style="color: inherit; font-weight: 700;">mentions légales</a>.
+      <strong>Usage légal uniquement.</strong>
+      Cet outil doit être utilisé sur des sites que vous êtes autorisé à analyser.
+      Les scans non autorisés peuvent constituer une infraction pénale.
     </div>
   </div>
 
   <div class="grille-principale">
 
-    <!-- ═══════════════ COLONNE LATÉRALE ═══════════════ -->
     <aside class="colonne-laterale" aria-label="Configuration du scan">
 
-      <!-- Carte 1 : Cible -->
       <section class="carte">
         <h2 class="carte-titre">
           <i class="fas fa-crosshairs" aria-hidden="true"></i>
@@ -1024,14 +735,10 @@
           <label for="targetUrl" class="champ-label">
             URL à analyser <span class="obligatoire" aria-label="obligatoire">*</span>
           </label>
-          <input
-            type="url"
-            id="targetUrl"
-            class="champ-input"
-            value="https://www.data.gouv.fr/fr/"
-            placeholder="https://exemple.gouv.fr"
-            required
-            aria-describedby="targetUrl-aide">
+          <input type="url" id="targetUrl" class="champ-input"
+                 value="https://www.data.gouv.fr/fr/"
+                 placeholder="https://exemple.fr" required
+                 aria-describedby="targetUrl-aide">
           <span id="targetUrl-aide" class="champ-aide">
             Adresse complète du site à analyser
           </span>
@@ -1043,6 +750,7 @@
             <option value="0">Page principale uniquement</option>
             <option value="1" selected>Page + sous-pages directes</option>
             <option value="2">Page + sous-pages + sous-sous-pages</option>
+            <option value="3">Profondeur maximale</option>
           </select>
         </div>
 
@@ -1054,6 +762,7 @@
             <option value="10">10 pages</option>
             <option value="20">20 pages</option>
             <option value="50">50 pages</option>
+            <option value="100">100 pages</option>
           </select>
         </div>
 
@@ -1085,7 +794,6 @@
         </div>
       </section>
 
-      <!-- Carte 2 : Statistiques -->
       <section class="carte" aria-label="Statistiques du scan">
         <h2 class="carte-titre">
           <i class="fas fa-chart-simple" aria-hidden="true"></i>
@@ -1130,10 +838,8 @@
 
     </aside>
 
-    <!-- ═══════════════ COLONNE PRINCIPALE ═══════════════ -->
     <section class="colonne-principale" aria-label="Résultats">
 
-      <!-- Onglets -->
       <nav class="onglets" role="tablist" aria-label="Sections du service">
         <button class="onglet actif" data-mode="scan" role="tab" aria-selected="true" aria-controls="modeScan">
           <i class="fas fa-satellite-dish" aria-hidden="true"></i>
@@ -1149,11 +855,10 @@
         </button>
       </nav>
 
-      <!-- Panneau : Scan de page -->
       <div id="modeScan" class="panneau" role="tabpanel">
         <div class="panneau-entete">
           <h2 class="panneau-titre">
-            <i class="fas fa-list" style="color: var(--rouge-marianne);" aria-hidden="true"></i>
+            <i class="fas fa-list" style="color: var(--couleur-accent);" aria-hidden="true"></i>
             Résultats du scan
           </h2>
           <span class="info-resultat" id="resultsInfo">En attente…</span>
@@ -1179,11 +884,10 @@
         </div>
       </div>
 
-      <!-- Panneau : Scan complet -->
       <div id="modeFull" class="panneau" role="tabpanel" style="display:none;">
         <div class="panneau-entete">
           <h2 class="panneau-titre">
-            <i class="fas fa-sitemap" style="color: var(--rouge-marianne);" aria-hidden="true"></i>
+            <i class="fas fa-sitemap" style="color: var(--couleur-accent);" aria-hidden="true"></i>
             Scan complet via sitemap
           </h2>
           <span class="info-resultat" id="fullInfo">En attente…</span>
@@ -1257,11 +961,10 @@
         </div>
       </div>
 
-      <!-- Panneau : APIs -->
       <div id="modeApi" class="panneau" role="tabpanel" style="display:none;">
         <div class="panneau-entete">
           <h2 class="panneau-titre">
-            <i class="fas fa-plug" style="color: var(--rouge-marianne);" aria-hidden="true"></i>
+            <i class="fas fa-plug" style="color: var(--couleur-accent);" aria-hidden="true"></i>
             Analyse d'APIs publiques
           </h2>
           <span class="info-resultat">15+ APIs référencées</span>
@@ -1274,7 +977,7 @@
 
           <div class="champ-groupe">
             <label for="apiUrl" class="champ-label">URL de l'endpoint</label>
-            <input type="url" id="apiUrl" class="champ-input" placeholder="https://api.exemple.gouv.fr/v1/...">
+            <input type="url" id="apiUrl" class="champ-input" placeholder="https://api.exemple.fr/v1/...">
           </div>
 
           <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 16px;">
@@ -1300,26 +1003,29 @@
 
           <div class="champ-checkbox">
             <input type="checkbox" id="apiInsecure">
-            <label for="apiInsecure">Ignorer la vérification du certificat SSL (environnement de test uniquement)</label>
+            <label for="apiInsecure">Ignorer la vérification SSL (test uniquement)</label>
           </div>
 
-          <button class="btn btn-primaire" onclick="probeAPI()">
+          <button class="btn btn-primaire" id="btnProbeApi">
             <i class="fas fa-play"></i> Tester l'API
           </button>
         </div>
 
-        <div class="carte">
+        <div class="carte" style="margin-bottom: 20px;">
           <h3 class="carte-titre">
-            <i class="fas fa-book"></i> Catalogue des APIs de l'État
+            <i class="fas fa-book"></i> Catalogue des APIs publiques
           </h3>
           <p style="font-size: 0.875rem; color: var(--gris-700); margin-bottom: 16px;">
             Accédez aux APIs publiques françaises référencées sur data.gouv.fr.
           </p>
           <div class="btn-group">
-            <button class="btn btn-primaire" onclick="loadCatalog()">
+            <button class="btn btn-primaire" id="btnLoadCatalog">
               <i class="fas fa-list"></i> Afficher le catalogue complet
             </button>
-            <button class="btn btn-secondaire" onclick="loadFicoba()">
+            <button class="btn btn-secondaire" id="btnProbeCatalog">
+              <i class="fas fa-vial"></i> Tester tout le catalogue
+            </button>
+            <button class="btn btn-secondaire" id="btnLoadFicoba">
               <i class="fas fa-landmark"></i> FICOBA v2 (DGFiP)
             </button>
           </div>
@@ -1331,56 +1037,47 @@
     </section>
   </div>
 
-  <!-- ═══════════════════════════════════════════════════════════
-       MENTIONS LÉGALES / DOCUMENTATION
-       ═══════════════════════════════════════════════════════════ -->
-
   <section id="documentation" style="margin-top: 48px; padding: 32px; background: var(--gris-50); border-radius: 6px;">
-    <h2 style="font-size: 1.25rem; color: var(--bleu-france); margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
-      <i class="fas fa-circle-info" style="color: var(--rouge-marianne);"></i>
+    <h2 style="font-size: 1.25rem; color: var(--couleur-primaire); margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
+      <i class="fas fa-circle-info" style="color: var(--couleur-accent);"></i>
       Documentation & mentions légales
     </h2>
 
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; font-size: 0.875rem; line-height: 1.7;">
       <div>
-        <h3 style="color: var(--bleu-france); margin-bottom: 8px;">📖 À propos du service</h3>
+        <h3 style="color: var(--couleur-primaire); margin-bottom: 8px;">📖 À propos</h3>
         <p>
           Scanner Pro est un outil d'analyse technique permettant d'extraire, classifier
-          et auditer les ressources numériques d'un site public.
+          et auditer les ressources numériques d'un site.
         </p>
       </div>
 
       <div>
-        <h3 style="color: var(--bleu-france); margin-bottom: 8px;">⚖️ Cadre d'utilisation</h3>
+        <h3 style="color: var(--couleur-primaire); margin-bottom: 8px;">⚖️ Cadre d'utilisation</h3>
         <p>
           Cet outil doit être utilisé dans un cadre <strong>strictement légal</strong> :
           audit de vos propres systèmes, ou analyse de données publiques.
+          Tout scan non autorisé peut constituer une infraction.
         </p>
       </div>
 
       <div>
-        <h3 style="color: var(--bleu-france); margin-bottom: 8px;">🔒 Protection des données</h3>
+        <h3 style="color: var(--couleur-primaire); margin-bottom: 8px;">🔒 Protection des données</h3>
         <p>
-          Aucune donnée personnelle n'est collectée. Conforme au
-          <strong>RGPD</strong> (UE 2016/679).
+          Aucune donnée personnelle n'est collectée ni conservée.
         </p>
       </div>
 
-      <div>
-        <h3 style="color: var(--bleu-france); margin-bottom: 8px;">♿ Accessibilité</h3>
+      <div id="accessibilite">
+        <h3 style="color: var(--couleur-primaire); margin-bottom: 8px;">♿ Accessibilité</h3>
         <p>
           Ce service vise la conformité <strong>RGAA 4.1</strong> (niveau AA).
-          Signalement : <a href="mailto:accessibilite@example.gouv.fr">accessibilite@example.gouv.fr</a>
         </p>
       </div>
     </div>
   </section>
 
 </main>
-
-<!-- ═══════════════════════════════════════════════════════════
-     PIED DE PAGE OFFICIEL
-     ═══════════════════════════════════════════════════════════ -->
 
 <footer class="footer-etat">
   <div class="footer-inner">
@@ -1390,8 +1087,6 @@
         <ul>
           <li><a href="#documentation">Documentation</a></li>
           <li><a href="#accessibilite">Accessibilité</a></li>
-          <li><a href="#mentions-legales">Mentions légales</a></li>
-          <li><a href="#">Nouveautés</a></li>
         </ul>
       </div>
 
@@ -1400,66 +1095,35 @@
         <ul>
           <li><a href="https://www.data.gouv.fr/" target="_blank" rel="noopener">data.gouv.fr</a></li>
           <li><a href="https://www.numerique.gouv.fr/" target="_blank" rel="noopener">numerique.gouv.fr</a></li>
-          <li><a href="https://www.systeme-de-design.gouv.fr/" target="_blank" rel="noopener">Système de design</a></li>
-          <li><a href="https://www.ssi.gouv.fr/" target="_blank" rel="noopener">ANSSI</a></li>
         </ul>
       </div>
 
       <div class="footer-colonne">
         <h3>Légal</h3>
         <ul>
-          <li><a href="#mentions-legales">Mentions légales</a></li>
-          <li><a href="#">Politique de confidentialité</a></li>
-          <li><a href="#">Conditions d'utilisation</a></li>
-          <li><a href="#">Cookies</a></li>
-        </ul>
-      </div>
-
-      <div class="footer-colonne">
-        <h3>Contact</h3>
-        <ul>
-          <li><a href="mailto:contact@example.gouv.fr">contact@example.gouv.fr</a></li>
-          <li><a href="#">Signaler un problème</a></li>
-          <li><a href="#">Contribuer</a></li>
+          <li><a href="#documentation">Mentions légales</a></li>
         </ul>
       </div>
     </div>
 
     <div class="footer-bas">
       <div class="footer-bas-gauche">
-        <svg width="40" height="46" viewBox="0 0 60 68" xmlns="http://www.w3.org/2000/svg" aria-label="Marianne">
-          <path d="M 12 30 Q 10 10 30 8 Q 50 10 48 30 L 48 42 Q 46 30 40 28 L 20 28 Q 14 30 12 42 Z" fill="#1a1a1a"/>
-          <ellipse cx="30" cy="38" rx="14" ry="17" fill="#2a2a2a"/>
-          <circle cx="24" cy="36" r="1.5" fill="white"/>
-          <circle cx="36" cy="36" r="1.5" fill="white"/>
-          <path d="M 24 54 L 26 62 L 34 62 L 36 54 Z" fill="#2a2a2a"/>
-          <path d="M 10 68 Q 12 58 24 56 L 36 56 Q 48 58 50 68 Z" fill="#1a1a1a"/>
-        </svg>
         <div>
-          <div style="font-weight: 700; font-size: 0.9rem;">République Française</div>
+          <div style="font-weight: 700; font-size: 0.9rem;">Scanner Pro</div>
           <div style="font-size: 0.75rem; color: var(--gris-500);">
-            © 2026 — Tous droits réservés
+            © 2026 — Outil d'analyse technique
           </div>
         </div>
-      </div>
-
-      <div class="footer-devise" aria-hidden="true">
-        <span>Liberté</span>
-        <span>•</span>
-        <span>Égalité</span>
-        <span>•</span>
-        <span>Fraternité</span>
       </div>
     </div>
   </div>
 </footer>
 
-<!-- Notifications -->
 <div class="notifications" id="toasts" role="status" aria-live="polite"></div>
 
 <script>
 // ═══════════════════════════════════════════════════════════
-//  ÉTAT GLOBAL
+//  UTILITAIRES
 // ═══════════════════════════════════════════════════════════
 
 const $ = sel => document.querySelector(sel);
@@ -1477,10 +1141,6 @@ let state = {
   errors: []
 };
 
-// ═══════════════════════════════════════════════════════════
-//  UTILITAIRES
-// ═══════════════════════════════════════════════════════════
-
 function notification(msg, type = 'info') {
   const t = document.createElement('div');
   t.className = `notification ${type}`;
@@ -1494,6 +1154,44 @@ function escapeHtml(t) {
   return String(t ?? '')
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
+function safeHref(url) {
+  try {
+    const u = new URL(url);
+    if (!['http:', 'https:'].includes(u.protocol)) return '#';
+    return u.href;
+  } catch {
+    return '#';
+  }
+}
+
+function showConfirm(title, message) {
+  return new Promise((resolve) => {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 10000; padding: 20px;
+    `;
+    overlay.innerHTML = `
+      <div style="background: white; border-radius: 6px; padding: 24px; max-width: 480px; width: 100%; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
+        <h3 style="color: var(--couleur-primaire); margin-bottom: 12px; font-size: 1.1rem;">${escapeHtml(title)}</h3>
+        <p style="color: var(--gris-700); margin-bottom: 20px; font-size: 0.9rem;">${escapeHtml(message)}</p>
+        <div style="display: flex; gap: 8px; justify-content: flex-end;">
+          <button class="btn btn-secondaire" style="width: auto; padding: 8px 20px;" data-action="cancel">Annuler</button>
+          <button class="btn btn-primaire" style="width: auto; padding: 8px 20px;" data-action="confirm">Confirmer</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    overlay.addEventListener('click', (e) => {
+      const action = e.target.dataset.action;
+      if (action === 'confirm') { overlay.remove(); resolve(true); }
+      else if (action === 'cancel' || e.target === overlay) { overlay.remove(); resolve(false); }
+    });
+  });
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1516,6 +1214,17 @@ $$('.onglet').forEach(tab => {
   });
 });
 
+function switchTab(mode) {
+  $$('.onglet').forEach(t => {
+    const isTarget = t.dataset.mode === mode;
+    t.classList.toggle('actif', isTarget);
+    t.setAttribute('aria-selected', isTarget ? 'true' : 'false');
+  });
+  $('#modeScan').style.display = mode === 'scan' ? 'block' : 'none';
+  $('#modeFull').style.display = mode === 'full' ? 'block' : 'none';
+  $('#modeApi').style.display = mode === 'api' ? 'block' : 'none';
+}
+
 // ═══════════════════════════════════════════════════════════
 //  BADGES
 // ═══════════════════════════════════════════════════════════
@@ -1532,7 +1241,7 @@ function badgeFor(link) {
 }
 
 // ═══════════════════════════════════════════════════════════
-//  SCAN SIMPLE
+//  SCAN
 // ═══════════════════════════════════════════════════════════
 
 async function scan(force = false) {
@@ -1642,7 +1351,7 @@ function renderPage() {
   if (total === 0) {
     $('#results').innerHTML = `
       <div class="chargement">
-        <p style="font-weight: 600; color: var(--bleu-france);">Aucun résultat pour ce filtre.</p>
+        <p style="font-weight: 600; color: var(--couleur-primaire);">Aucun résultat pour ce filtre.</p>
       </div>
       ${renderErrors(state.errors)}`;
     return;
@@ -1657,7 +1366,7 @@ function renderPage() {
       <td>
         <div style="font-weight:600; margin-bottom:4px;">${escapeHtml(l.title)}</div>
         <div class="cellule-url">
-          <a href="${escapeHtml(l.url)}" target="_blank" rel="noopener">${escapeHtml(l.url)}</a>
+          <a href="${safeHref(l.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(l.url)}</a>
         </div>
       </td>
       <td>${badgeFor(l)}</td>
@@ -1689,14 +1398,18 @@ function renderPage() {
       </table>
     </div>
     <div class="pagination">
-      <button onclick="goToPage(1)" ${state.currentPage === 1 ? 'disabled' : ''} aria-label="Première page">«</button>
-      <button onclick="goToPage(${state.currentPage - 1})" ${state.currentPage === 1 ? 'disabled' : ''} aria-label="Page précédente">←</button>
+      <button data-page="1" ${state.currentPage === 1 ? 'disabled' : ''} aria-label="Première page">«</button>
+      <button data-page="${state.currentPage - 1}" ${state.currentPage === 1 ? 'disabled' : ''} aria-label="Page précédente">←</button>
       <span class="pagination-info">Page ${state.currentPage} / ${totalPages}</span>
-      <button onclick="goToPage(${state.currentPage + 1})" ${state.currentPage === totalPages ? 'disabled' : ''} aria-label="Page suivante">→</button>
-      <button onclick="goToPage(${totalPages})" ${state.currentPage === totalPages ? 'disabled' : ''} aria-label="Dernière page">»</button>
+      <button data-page="${state.currentPage + 1}" ${state.currentPage === totalPages ? 'disabled' : ''} aria-label="Page suivante">→</button>
+      <button data-page="${totalPages}" ${state.currentPage === totalPages ? 'disabled' : ''} aria-label="Dernière page">»</button>
     </div>
     ${renderErrors(state.errors)}
   `;
+
+  $$('#results .pagination button[data-page]').forEach(btn => {
+    btn.addEventListener('click', () => goToPage(parseInt(btn.dataset.page, 10)));
+  });
 }
 
 function goToPage(p) {
@@ -1732,6 +1445,7 @@ async function detectSitemap() {
   if (!url) return notification('Veuillez saisir une URL.', 'erreur');
 
   $('#results').innerHTML = '<div class="chargement"><div class="spinner"></div><p>Recherche du sitemap…</p></div>';
+  switchTab('scan');
 
   try {
     const res = await fetch('/api/sitemap', {
@@ -1789,10 +1503,15 @@ async function scanFull() {
 
   if (!url) return notification('Veuillez saisir une URL.', 'erreur');
 
-  if (!confirm(`Lancer un scan complet de ${url} ?\n\nMaximum ${maxUrls} pages\nParallélisme : ${concurrency}\n\nCela peut prendre plusieurs minutes.`)) return;
+  const ok = await showConfirm(
+    `Lancer un scan complet de ${url} ?`,
+    `Maximum ${maxUrls} pages — Parallélisme : ${concurrency}. Cela peut prendre plusieurs minutes.`
+  );
+  if (!ok) return;
 
   $('#btnScanFull').disabled = true;
   $('#btnDetectSitemap').disabled = true;
+  switchTab('scan');
   $('#results').innerHTML = `
     <div class="chargement">
       <div class="spinner" role="status"></div>
@@ -1849,7 +1568,7 @@ async function scanFull() {
 }
 
 // ═══════════════════════════════════════════════════════════
-//  CATALOGUE D'APIs
+//  CATALOGUE
 // ═══════════════════════════════════════════════════════════
 
 async function loadCatalog() {
@@ -1868,7 +1587,7 @@ async function loadCatalog() {
     let html = `
       <div class="carte" style="margin-top: 20px;">
         <h3 class="carte-titre">
-          <i class="fas fa-list"></i> Catalogue des APIs de l'État
+          <i class="fas fa-list"></i> Catalogue des APIs
         </h3>
         <p style="font-size: 0.875rem; color: var(--gris-700); margin-bottom: 16px;">
           <strong>${data.stats.total}</strong> APIs référencées dans
@@ -1879,13 +1598,13 @@ async function loadCatalog() {
     for (const [category, apis] of Object.entries(grouped)) {
       html += `
         <details style="margin-top: 16px; padding: 12px; background: var(--gris-50); border-radius: 4px;">
-          <summary style="cursor: pointer; font-weight: 700; color: var(--bleu-france);">
+          <summary style="cursor: pointer; font-weight: 700; color: var(--couleur-primaire);">
             ${escapeHtml(category)} (${apis.length})
           </summary>
           <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 10px;">
             ${apis.map(api => `
               <details style="background: white; padding: 12px; border-radius: 4px; border: 1px solid var(--gris-200);">
-                <summary style="cursor: pointer; font-weight: 600; color: var(--bleu-france); font-size: 0.9rem;">
+                <summary style="cursor: pointer; font-weight: 600; color: var(--couleur-primaire); font-size: 0.9rem;">
                   ${escapeHtml(api.name)}
                   <span class="badge ${api.auth === 'public' ? 'badge-interne' : 'badge-pdf'}" style="font-size: 0.65rem; margin-left: 8px;">
                     ${api.auth === 'public' ? 'PUBLIC' : api.auth.toUpperCase()}
@@ -1894,12 +1613,12 @@ async function loadCatalog() {
                 <div style="margin-top: 10px; font-size: 0.82rem;">
                   <p style="color: var(--gris-700); margin-bottom: 8px;">${escapeHtml(api.description)}</p>
                   <p><strong>Base URL</strong> : <code>${escapeHtml(api.baseUrl)}</code></p>
-                  ${api.docsUrl ? `<p><strong>Documentation</strong> : <a href="${escapeHtml(api.docsUrl)}" target="_blank" rel="noopener">${escapeHtml(api.docsUrl)}</a></p>` : ''}
+                  ${api.docsUrl ? `<p><strong>Documentation</strong> : <a href="${safeHref(api.docsUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(api.docsUrl)}</a></p>` : ''}
                   <p style="margin-top: 8px;"><strong>Exemples :</strong></p>
                   <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;">
                     ${api.examples.map(ex => `
                       <button class="btn btn-secondaire" style="width:auto; padding:6px 12px; font-size:0.75rem;"
-                              onclick="testApi('${escapeHtml(ex.url)}')">
+                              data-test-api="${escapeHtml(ex.url)}">
                         ${escapeHtml(ex.label)}
                       </button>
                     `).join('')}
@@ -1921,7 +1640,7 @@ async function loadCatalog() {
 }
 
 // ═══════════════════════════════════════════════════════════
-//  TEST API
+//  PROBE API
 // ═══════════════════════════════════════════════════════════
 
 async function probeAPI() {
@@ -1994,7 +1713,7 @@ function renderAPIResult(data) {
         </span>
       </div>
 
-      <h4 style="color: var(--bleu-france); font-size: 0.9rem; margin-top: 16px;">🔍 En-têtes de sécurité</h4>
+      <h4 style="color: var(--couleur-primaire); font-size: 0.9rem; margin-top: 16px;">🔍 En-têtes de sécurité</h4>
       <ul style="margin-top: 8px; font-size: 0.82rem; color: var(--gris-700);">
         <li>HSTS : ${sec.hsts ? '✅' : '❌'}</li>
         <li>CSP : ${sec.csp ? '✅' : '❌'}</li>
@@ -2004,7 +1723,7 @@ function renderAPIResult(data) {
       </ul>
 
       ${data.isJSON ? `
-        <h4 style="color: var(--bleu-france); font-size: 0.9rem; margin-top: 16px;">📊 Structure JSON</h4>
+        <h4 style="color: var(--couleur-primaire); font-size: 0.9rem; margin-top: 16px;">📊 Structure JSON</h4>
         <p style="font-size: 0.82rem; margin-top: 6px;">
           Type : <strong>${data.json.type}</strong>
           ${data.json.length ? ` — ${data.json.length} élément(s)` : ''}
@@ -2015,18 +1734,114 @@ function renderAPIResult(data) {
   `;
 }
 
+async function probeCatalog() {
+  $('#apiResult').innerHTML = '<div class="chargement"><div class="spinner"></div><p>Test de toutes les APIs du catalogue…</p></div>';
+
+  try {
+    const res = await fetch('/api/probe-catalog', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ maxApis: 20 })
+    });
+
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Erreur');
+
+    const s = data.summary;
+    const rows = data.results.map(r => {
+      const color = !r.success ? 'var(--erreur)'
+                  : r.status < 300 ? 'var(--succes)'
+                  : r.status < 400 ? 'var(--attention)'
+                  : 'var(--erreur)';
+      const statusLabel = r.success ? `${r.status} ${r.statusText || ''}` : '❌ Échec';
+      return `
+        <tr>
+          <td>
+            <div style="font-weight:600;">${escapeHtml(r.name)}</div>
+            <div style="font-size:0.75rem; color: var(--gris-500);">${escapeHtml(r.category)}</div>
+          </td>
+          <td>
+            <span style="background: ${color}; color: white; padding: 3px 8px; border-radius: 3px; font-size: 0.72rem; font-weight: 700;">
+              ${escapeHtml(statusLabel)}
+            </span>
+          </td>
+          <td style="font-size:0.8rem; color: var(--gris-700);">
+            ${r.durationMs ? r.durationMs + ' ms' : '—'}
+          </td>
+          <td style="font-size:0.8rem; color: var(--gris-700);">
+            ${r.isJSON ? 'JSON' : '—'}
+            ${r.size ? ` • ${(r.size / 1024).toFixed(1)} Ko` : ''}
+          </td>
+          <td style="font-size:0.75rem; font-family: var(--font-mono); word-break: break-all; max-width: 280px;">
+            ${escapeHtml(r.url)}
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    $('#apiResult').innerHTML = `
+      <div class="carte" style="margin-top: 20px;">
+        <h3 class="carte-titre">
+          <i class="fas fa-vial"></i>
+          Test du catalogue (${s.total} APIs)
+        </h3>
+
+        <div class="stats-grille" style="margin-bottom: 20px;">
+          <div class="stat-carte">
+            <div class="stat-valeur" style="color: var(--succes);">${s.ok}</div>
+            <div class="stat-libelle">OK</div>
+          </div>
+          <div class="stat-carte">
+            <div class="stat-valeur" style="color: var(--attention);">${s.redirects}</div>
+            <div class="stat-libelle">Redirections</div>
+          </div>
+          <div class="stat-carte">
+            <div class="stat-valeur" style="color: var(--attention);">${s.clientErrors}</div>
+            <div class="stat-libelle">Erreurs 4xx</div>
+          </div>
+          <div class="stat-carte">
+            <div class="stat-valeur" style="color: var(--erreur);">${s.serverErrors}</div>
+            <div class="stat-libelle">Erreurs 5xx</div>
+          </div>
+          <div class="stat-carte">
+            <div class="stat-valeur" style="color: var(--erreur);">${s.failed}</div>
+            <div class="stat-libelle">Échecs réseau</div>
+          </div>
+        </div>
+
+        <div class="tableau-wrapper">
+          <table class="tableau">
+            <thead>
+              <tr>
+                <th>API</th>
+                <th>Statut</th>
+                <th>Durée</th>
+                <th>Type</th>
+                <th>URL testée</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      </div>
+    `;
+
+    notification(`Catalogue testé : ${s.ok}/${s.total} OK.`, s.ok > 0 ? 'succes' : 'attention');
+  } catch (err) {
+    $('#apiResult').innerHTML = `<div class="alerte alerte-erreur">Erreur : ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  TEST API (via boutons catalogue)
+// ═══════════════════════════════════════════════════════════
+
 async function testApi(url) {
   $('#apiUrl').value = url;
   $('#apiMethod').value = 'GET';
   $('#apiHeaders').value = '{}';
   $('#apiBody').value = '';
-
-  $$('.onglet').forEach(t => t.classList.remove('actif'));
-  document.querySelector('[data-mode="api"]').classList.add('actif');
-  $('#modeScan').style.display = 'none';
-  $('#modeFull').style.display = 'none';
-  $('#modeApi').style.display = 'block';
-
+  switchTab('api');
   await probeAPI();
 }
 
@@ -2066,11 +1881,10 @@ async function loadFicoba() {
       <div class="alerte alerte-attention" style="margin-top: 16px;">
         <i class="fas fa-triangle-exclamation"></i>
         <div>
-          <strong>API à accès restreint</strong>
+          <strong>Documentation publique uniquement</strong>
           <p style="margin-top: 6px;">
-            Cette API est réservée aux <strong>partenaires habilités</strong>
-            (administrations, établissements bancaires). Tout accès non autorisé est
-            sanctionné par l'<strong>article 323-1 du Code pénal</strong>.
+            Cet outil analyse la <strong>documentation</strong> publique de l'API.
+            L'accès réel à FICOBA est réservé aux partenaires habilités.
           </p>
         </div>
       </div>
@@ -2089,6 +1903,10 @@ $('#btnScan').addEventListener('click', () => scan(false));
 $('#btnForceScan').addEventListener('click', () => scan(true));
 $('#btnScanFull').addEventListener('click', scanFull);
 $('#btnDetectSitemap').addEventListener('click', detectSitemap);
+$('#btnProbeApi').addEventListener('click', probeAPI);
+$('#btnLoadCatalog').addEventListener('click', loadCatalog);
+$('#btnProbeCatalog').addEventListener('click', probeCatalog);
+$('#btnLoadFicoba').addEventListener('click', loadFicoba);
 
 $$('.filter-btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -2104,12 +1922,19 @@ $('#filterSearch').addEventListener('input', (e) => {
   applyFilters();
 });
 
-// Exposition globale
-window.goToPage = goToPage;
-window.probeAPI = probeAPI;
-window.loadCatalog = loadCatalog;
-window.loadFicoba = loadFicoba;
-window.testApi = testApi;
+// Délégation pour les boutons data-test-api
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-test-api]');
+  if (btn) testApi(btn.dataset.testApi);
+});
+
+// Placeholder boutons secondaires
+$('#btnExtractAll').addEventListener('click', () => {
+  notification('Fonction d\'extraction groupée : utilisez le catalogue d\'APIs.', 'info');
+});
+$('#btnDetectApis').addEventListener('click', () => {
+  notification('Détection d\'APIs : lancez un scan puis explorez les résultats.', 'info');
+});
 </script>
 
 </body>

@@ -1,7 +1,18 @@
+// extractors.js
 import * as cheerio from 'cheerio';
 import { request } from 'undici';
 import ExcelJS from 'exceljs';
 import { parse as csvParse } from 'csv-parse/sync';
+import {
+  getStatusText,
+  sanitizeHeaders,
+  summarizeJSON,
+  analyzeJSONStructure,
+  detectAPIHints,
+  analyzeSecurity,
+  classifyError,
+  getErrorHint
+} from './utils.js';
 
 // ═══════════════════════════════════════════════════════════
 //  TÉLÉCHARGEMENT
@@ -42,17 +53,14 @@ export async function downloadFile(url, timeoutMs = 30000) {
 }
 
 // ═══════════════════════════════════════════════════════════
-//  EXTRACTEUR PDF — avec pdfjs-dist (pas pdf-parse)
+//  EXTRACTEUR PDF
 // ═══════════════════════════════════════════════════════════
 
 export async function extractPDF(url) {
   try {
     const { buffer, size } = await downloadFile(url, 60000);
-
-    // Import dynamique pour éviter les bugs au chargement
     const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
     const uint8Array = new Uint8Array(buffer);
-
     const loadingTask = pdfjsLib.getDocument({ data: uint8Array });
     const pdf = await loadingTask.promise;
 
@@ -62,17 +70,13 @@ export async function extractPDF(url) {
     for (let i = 1; i <= maxPages; i++) {
       const page = await pdf.getPage(i);
       const textContent = await page.getTextContent();
-      const pageText = textContent.items.map(item => item.str).join(' ');
-      fullText += pageText + '\n';
+      fullText += textContent.items.map(item => item.str).join(' ') + '\n';
     }
 
     const metadata = await pdf.getMetadata().catch(() => ({}));
 
     return {
-      success: true,
-      url,
-      size,
-      pages: pdf.numPages,
+      success: true, url, size, pages: pdf.numPages,
       info: {
         Title: metadata?.info?.Title || null,
         Author: metadata?.info?.Author || null,
@@ -90,14 +94,12 @@ export async function extractPDF(url) {
 }
 
 function extractUrlsFromText(text) {
-  const regex = /https?:\/\/[^\s<>"']+/gi;
-  const matches = text.match(regex) || [];
+  const matches = text.match(/https?:\/\/[^\s<>"']+/gi) || [];
   return [...new Set(matches)].slice(0, 50);
 }
 
 function extractEmails(text) {
-  const regex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
-  const matches = text.match(regex) || [];
+  const matches = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) || [];
   return [...new Set(matches)].slice(0, 20);
 }
 
@@ -112,16 +114,11 @@ export async function extractJSON(url) {
     const data = JSON.parse(text);
 
     return {
-      success: true,
-      url,
-      size,
+      success: true, url, size,
       keys: Object.keys(data).slice(0, 50),
       isArray: Array.isArray(data),
       arrayLength: Array.isArray(data) ? data.length : null,
-      sample: JSON.stringify(
-        Array.isArray(data) ? data.slice(0, 3) : data,
-        null, 2
-      ).substring(0, 3000),
+      sample: JSON.stringify(Array.isArray(data) ? data.slice(0, 3) : data, null, 2).substring(0, 3000),
       urlsFound: extractUrlsFromJSON(data)
     };
   } catch (err) {
@@ -132,7 +129,6 @@ export async function extractJSON(url) {
 function extractUrlsFromJSON(obj, depth = 0) {
   if (depth > 4 || !obj) return [];
   const urls = [];
-
   if (typeof obj === 'string') {
     if (/^https?:\/\//i.test(obj)) urls.push(obj);
   } else if (Array.isArray(obj)) {
@@ -140,7 +136,6 @@ function extractUrlsFromJSON(obj, depth = 0) {
   } else if (typeof obj === 'object') {
     Object.values(obj).forEach(v => urls.push(...extractUrlsFromJSON(v, depth + 1)));
   }
-
   return [...new Set(urls)].slice(0, 100);
 }
 
@@ -153,23 +148,15 @@ export async function extractCSV(url) {
     const { buffer, size } = await downloadFile(url, 30000);
     const text = buffer.toString('utf-8');
     const firstLine = text.split('\n')[0];
-    const separator = firstLine.includes(';') ? ';'
-                     : firstLine.includes('\t') ? '\t'
-                     : ',';
+    const separator = firstLine.includes(';') ? ';' : firstLine.includes('\t') ? '\t' : ',';
 
     const records = csvParse(text, {
-      columns: true,
-      skip_empty_lines: true,
-      delimiter: separator,
-      relax_quotes: true,
-      relax_column_count: true
+      columns: true, skip_empty_lines: true, delimiter: separator,
+      relax_quotes: true, relax_column_count: true
     });
 
     return {
-      success: true,
-      url,
-      size,
-      separator,
+      success: true, url, size, separator,
       columns: records.length > 0 ? Object.keys(records[0]) : [],
       rowCount: records.length,
       sample: records.slice(0, 5),
@@ -181,20 +168,18 @@ export async function extractCSV(url) {
 }
 
 // ═══════════════════════════════════════════════════════════
-//  EXTRACTEUR XLSX / XLS
+//  EXTRACTEUR XLSX
 // ═══════════════════════════════════════════════════════════
 
 export async function extractXLSX(url) {
   try {
     const { buffer, size } = await downloadFile(url, 45000);
-
     const workbook = new ExcelJS.Workbook();
     await workbook.xlsx.load(buffer);
 
     const sheets = workbook.worksheets.map(sheet => {
       const rows = [];
       let rowCount = 0;
-
       sheet.eachRow((row, rowNumber) => {
         rowCount = rowNumber;
         if (rowNumber <= 5) {
@@ -207,19 +192,11 @@ export async function extractXLSX(url) {
           rows.push(values);
         }
       });
-
-      return {
-        name: sheet.name,
-        rows: rowCount,
-        columns: sheet.columnCount,
-        sample: rows
-      };
+      return { name: sheet.name, rows: rowCount, columns: sheet.columnCount, sample: rows };
     });
 
     return {
-      success: true,
-      url,
-      size,
+      success: true, url, size,
       sheetCount: workbook.worksheets.length,
       sheetNames: workbook.worksheets.map(s => s.name),
       sheets
@@ -230,7 +207,7 @@ export async function extractXLSX(url) {
 }
 
 // ═══════════════════════════════════════════════════════════
-//  DÉTECTION D'ENDPOINTS DANS LE HTML/JS
+//  DÉTECTION D'ENDPOINTS
 // ═══════════════════════════════════════════════════════════
 
 export function detectApiEndpoints(html, baseUrl) {
@@ -246,7 +223,6 @@ export function detectApiEndpoints(html, baseUrl) {
       /["'`](https?:\/\/[^"'`\s<>]+)["'`]/g,
       /["'`](\/(?:api|v\d+|rest|graphql|json|data)[^"'`\s<>]*)["'`]/g
     ];
-
     patterns.forEach(rx => {
       let m;
       while ((m = rx.exec(content)) !== null) endpoints.add(m[1]);
@@ -273,12 +249,11 @@ export function detectApiEndpoints(html, baseUrl) {
       resolved.push(absolute);
     } catch {}
   }
-
   return [...new Set(resolved)].slice(0, 30);
 }
 
 // ═══════════════════════════════════════════════════════════
-//  EXTRACTION NEXT/NUXT DATA
+//  NEXT/NUXT DATA
 // ═══════════════════════════════════════════════════════════
 
 export function extractNextData(html) {
@@ -288,10 +263,8 @@ export function extractNextData(html) {
       const data = JSON.parse(nextMatch[1]);
       return {
         framework: 'Next.js',
-        props: data.props,
-        page: data.page,
-        query: data.query,
-        buildId: data.buildId
+        props: data.props, page: data.page,
+        query: data.query, buildId: data.buildId
       };
     } catch {}
   }
@@ -299,15 +272,9 @@ export function extractNextData(html) {
   const nuxtMatch = html.match(/window\.__NUXT__\s*=\s*({[\s\S]*?})\s*(?:<\/script>|;\s*\n)/);
   if (nuxtMatch) {
     try {
-      const cleaned = nuxtMatch[1].trim();
-      return {
-        framework: 'Nuxt',
-        rawLength: cleaned.length,
-        preview: cleaned.substring(0, 500)
-      };
+      return { framework: 'Nuxt', rawLength: nuxtMatch[1].trim().length, preview: nuxtMatch[1].trim().substring(0, 500) };
     } catch {}
   }
-
   return null;
 }
 
@@ -317,7 +284,6 @@ export function extractNextData(html) {
 
 export async function probeApiEndpoint(url, options = {}) {
   const { method = 'GET', headers = {}, body = null, timeoutMs = 15000 } = options;
-
   const start = Date.now();
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -344,7 +310,6 @@ export async function probeApiEndpoint(url, options = {}) {
     const res = await request(url, fetchOptions);
     const rawBody = await res.body.arrayBuffer();
     const text = new TextDecoder('utf-8').decode(rawBody);
-
     const contentType = res.headers['content-type'] || '';
     let parsed = null;
 
@@ -353,26 +318,22 @@ export async function probeApiEndpoint(url, options = {}) {
     }
 
     return {
-      success: true,
-      url,
-      method,
+      success: true, url, method,
       status: res.statusCode,
       statusText: getStatusText(res.statusCode),
       durationMs: Date.now() - start,
       headers: sanitizeHeaders(res.headers),
-      contentType,
-      size: rawBody.byteLength,
+      contentType, size: rawBody.byteLength,
       preview: text.substring(0, 3000),
       isJSON: !!parsed,
       json: parsed ? summarizeJSON(parsed) : null,
+      structure: parsed ? analyzeJSONStructure(parsed) : null,
       security: analyzeSecurity(res.headers, res.statusCode),
       apiHints: detectAPIHints(parsed, res.headers)
     };
   } catch (err) {
     return {
-      success: false,
-      url,
-      method,
+      success: false, url, method,
       error: err.code || err.message,
       errorType: classifyError(err),
       durationMs: Date.now() - start,
@@ -384,7 +345,7 @@ export async function probeApiEndpoint(url, options = {}) {
 }
 
 // ═══════════════════════════════════════════════════════════
-//  SITEMAP.XML
+//  SITEMAP
 // ═══════════════════════════════════════════════════════════
 
 export async function fetchSitemap(baseUrl, options = {}) {
@@ -417,30 +378,21 @@ export async function fetchSitemap(baseUrl, options = {}) {
       if (candidate.endsWith('robots.txt')) {
         const match = text.match(/^Sitemap:\s*(\S+)/im);
         if (match) {
-          const smUrl = match[1].trim();
-          const { buffer: smBuffer } = await downloadFile(smUrl, timeoutMs);
-          sitemapUrl = smUrl;
+          const { buffer: smBuffer } = await downloadFile(match[1].trim(), timeoutMs);
+          sitemapUrl = match[1].trim();
           sitemapContent = smBuffer.toString('utf-8');
           break;
         }
-      } else {
-        if (text.includes('<urlset') || text.includes('<sitemapindex') || contentType.includes('xml')) {
-          sitemapUrl = candidate;
-          sitemapContent = text;
-          break;
-        }
+      } else if (text.includes('<urlset') || text.includes('<sitemapindex') || contentType.includes('xml')) {
+        sitemapUrl = candidate;
+        sitemapContent = text;
+        break;
       }
-    } catch {
-      // Continue
-    }
+    } catch {}
   }
 
   if (!sitemapUrl || !sitemapContent) {
-    return {
-      success: false,
-      error: 'Aucun sitemap.xml trouvé',
-      tried: candidates
-    };
+    return { success: false, error: 'Aucun sitemap.xml trouvé', tried: candidates };
   }
 
   const parsed = parseSitemap(sitemapContent);
@@ -448,24 +400,17 @@ export async function fetchSitemap(baseUrl, options = {}) {
   if (parsed.type === 'index' && includeSubSitemaps) {
     const subSitemaps = parsed.sitemaps.slice(0, maxSitemaps);
     const allUrls = [];
-
     for (const subUrl of subSitemaps) {
       try {
         const { buffer } = await downloadFile(subUrl, timeoutMs);
-        const subContent = buffer.toString('utf-8');
-        const subParsed = parseSitemap(subContent);
-        if (subParsed.urls) {
-          allUrls.push(...subParsed.urls.slice(0, maxUrlsPerSitemap));
-        }
+        const subParsed = parseSitemap(buffer.toString('utf-8'));
+        if (subParsed.urls) allUrls.push(...subParsed.urls.slice(0, maxUrlsPerSitemap));
       } catch (err) {
         console.warn(`⚠ Sous-sitemap ${subUrl} inaccessible: ${err.message}`);
       }
     }
-
     return {
-      success: true,
-      sitemapUrl,
-      type: 'index',
+      success: true, sitemapUrl, type: 'index',
       subSitemapsCount: parsed.sitemaps.length,
       subSitemapsUsed: subSitemaps.length,
       totalUrls: allUrls.length,
@@ -474,9 +419,7 @@ export async function fetchSitemap(baseUrl, options = {}) {
   }
 
   return {
-    success: true,
-    sitemapUrl,
-    type: parsed.type,
+    success: true, sitemapUrl, type: parsed.type,
     totalUrls: parsed.urls ? parsed.urls.length : 0,
     urls: parsed.urls || []
   };
@@ -500,7 +443,6 @@ function parseSitemap(xml) {
     const lastmod = $(el).find('lastmod').first().text().trim();
     const changefreq = $(el).find('changefreq').first().text().trim();
     const priority = $(el).find('priority').first().text().trim();
-
     if (loc) {
       urls.push({
         url: loc,
@@ -510,127 +452,29 @@ function parseSitemap(xml) {
       });
     }
   });
-
   return { type: 'urlset', urls };
 }
 
 export async function fetchRSS(baseUrl) {
   const base = new URL(baseUrl);
   const origin = `${base.protocol}//${base.host}`;
-
   const candidates = [
-    `${origin}/feed`,
-    `${origin}/feed.xml`,
-    `${origin}/rss`,
-    `${origin}/rss.xml`,
-    `${origin}/atom.xml`,
-    `${origin}/index.xml`
+    `${origin}/feed`, `${origin}/feed.xml`, `${origin}/rss`,
+    `${origin}/rss.xml`, `${origin}/atom.xml`, `${origin}/index.xml`
   ];
 
   for (const candidate of candidates) {
     try {
       const { buffer, contentType } = await downloadFile(candidate, 10000);
       if (!contentType.includes('xml') && !contentType.includes('rss')) continue;
-
-      const text = buffer.toString('utf-8');
-      const $ = cheerio.load(text, { xmlMode: true });
+      const $ = cheerio.load(buffer.toString('utf-8'), { xmlMode: true });
       const urls = [];
-
       $('item > link, entry > link').each((_, el) => {
         const loc = $(el).text().trim() || $(el).attr('href');
         if (loc) urls.push({ url: loc, source: 'rss' });
       });
-
-      if (urls.length > 0) {
-        return { success: true, feedUrl: candidate, urls };
-      }
+      if (urls.length > 0) return { success: true, feedUrl: candidate, urls };
     } catch {}
   }
-
   return { success: false, error: 'Aucun flux RSS/Atom trouvé' };
-}
-
-// ═══════════════════════════════════════════════════════════
-//  HELPERS
-// ═══════════════════════════════════════════════════════════
-
-function getStatusText(code) {
-  const map = {
-    200: 'OK', 201: 'Created', 204: 'No Content',
-    301: 'Moved Permanently', 302: 'Found', 304: 'Not Modified',
-    400: 'Bad Request', 401: 'Unauthorized', 403: 'Forbidden',
-    404: 'Not Found', 405: 'Method Not Allowed', 429: 'Too Many Requests',
-    500: 'Internal Server Error', 502: 'Bad Gateway', 503: 'Service Unavailable'
-  };
-  return map[code] || '';
-}
-
-function sanitizeHeaders(headers) {
-  const safe = {};
-  const blocked = ['set-cookie', 'cookie', 'authorization'];
-  Object.entries(headers).forEach(([k, v]) => {
-    if (!blocked.includes(k.toLowerCase())) safe[k] = v;
-  });
-  return safe;
-}
-
-function summarizeJSON(obj) {
-  const json = JSON.stringify(obj, null, 2);
-  return {
-    type: Array.isArray(obj) ? 'array' : typeof obj,
-    length: Array.isArray(obj) ? obj.length : Object.keys(obj).length,
-    keys: Array.isArray(obj) ? null : Object.keys(obj).slice(0, 30),
-    sample: json.substring(0, 2500)
-  };
-}
-
-function analyzeSecurity(headers, status) {
-  return {
-    https: true,
-    hsts: !!headers['strict-transport-security'],
-    csp: !!headers['content-security-policy'],
-    xFrameOptions: headers['x-frame-options'] || null,
-    cors: headers['access-control-allow-origin'] || null,
-    needsAuth: status === 401,
-    forbidden: status === 403,
-    rateLimitHint: headers['x-ratelimit-limit'] || headers['retry-after'] || null,
-    server: headers['server'] || null,
-    poweredBy: headers['x-powered-by'] || null
-  };
-}
-
-function detectAPIHints(parsed, headers) {
-  const hints = { hasPagination: false, hasHATEOAS: false, hasLinks: false, dataField: null };
-  if (!parsed) return hints;
-  if (typeof parsed === 'object' && !Array.isArray(parsed)) {
-    if (parsed._links || parsed.links || parsed._embedded) hints.hasHATEOAS = true;
-    if (parsed.total !== undefined || parsed.page !== undefined || parsed.count !== undefined) hints.hasPagination = true;
-    ['data', 'items', 'results', 'content', 'records', '_embedded'].forEach(f => {
-      if (parsed[f] !== undefined) hints.dataField = f;
-    });
-  }
-  if (headers['link']) hints.hasLinks = true;
-  return hints;
-}
-
-function classifyError(err) {
-  const code = err.code || '';
-  if (code.includes('CERT') || code.includes('SSL')) return 'TLS_CERTIFICATE';
-  if (code.includes('TIMEOUT') || code.includes('ABORT')) return 'TIMEOUT';
-  if (code.includes('ENOTFOUND')) return 'DNS_NOT_FOUND';
-  if (code.includes('ECONNREFUSED')) return 'CONNECTION_REFUSED';
-  if (code.includes('ECONNRESET')) return 'CONNECTION_RESET';
-  return 'UNKNOWN';
-}
-
-function getErrorHint(err) {
-  const type = classifyError(err);
-  return {
-    TLS_CERTIFICATE: 'Certificat auto-signé ou invalide. Essaie avec insecure: true (dev uniquement).',
-    TIMEOUT: 'Le serveur ne répond pas dans les temps.',
-    DNS_NOT_FOUND: 'Le nom de domaine ne résout pas. Vérifie /etc/hosts ou VPN.',
-    CONNECTION_REFUSED: 'Le port est fermé ou le service down.',
-    CONNECTION_RESET: 'La connexion a été coupée.',
-    UNKNOWN: 'Erreur inconnue.'
-  }[type] || 'Regarde le message d\'erreur complet.';
 }

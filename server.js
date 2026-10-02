@@ -13,28 +13,27 @@ import { fileURLToPath } from 'node:url';
 import { lookup } from 'node:dns/promises';
 
 import {
-  downloadFile,
-  extractPDF,
-  extractJSON,
-  extractCSV,
-  extractXLSX,
-  detectApiEndpoints,
-  extractNextData,
-  probeApiEndpoint,
-  fetchSitemap,
-  fetchRSS
+  downloadFile, extractPDF, extractJSON, extractCSV, extractXLSX,
+  detectApiEndpoints, extractNextData, probeApiEndpoint,
+  fetchSitemap, fetchRSS
 } from './extractors.js';
 
 import { API_CATALOG, getCatalogStats } from './apis-catalog.js';
 
+import {
+  getStatusText, sanitizeHeaders, summarizeJSON, analyzeJSONStructure,
+  detectAPIHints, analyzeSecurity, classifyError, getErrorHint,
+  validateTargetUrl, LIMITS, clamp
+} from './utils.js';
+
 // ═══════════════════════════════════════════════════════════
-//  2. INITIALISATION APP (DOIT ÊTRE AVANT TOUT app.get/post)
+//  2. INITIALISATION APP
 // ═══════════════════════════════════════════════════════════
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json({ limit: '5mb' }));
@@ -70,7 +69,49 @@ function setCache(key, data) {
 }
 
 // ═══════════════════════════════════════════════════════════
-//  4. PUPPETEER
+//  4. RATE LIMIT + SSRF GUARD
+// ═══════════════════════════════════════════════════════════
+
+const rateLimitStore = new Map();
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX = 30;
+
+function rateLimit(req, res, next) {
+  const ip = req.ip || req.socket.remoteAddress || 'unknown';
+  const now = Date.now();
+  const entry = rateLimitStore.get(ip) || { count: 0, resetAt: now + RATE_LIMIT_WINDOW_MS };
+
+  if (now > entry.resetAt) {
+    entry.count = 0;
+    entry.resetAt = now + RATE_LIMIT_WINDOW_MS;
+  }
+
+  entry.count++;
+  rateLimitStore.set(ip, entry);
+
+  if (entry.count > RATE_LIMIT_MAX) {
+    return res.status(429).json({
+      error: 'Trop de requêtes. Réessayez dans une minute.',
+      errorType: 'RATE_LIMITED'
+    });
+  }
+
+  next();
+}
+
+function ssrfGuard(req, res, next) {
+  const target = req.body?.url;
+  if (!target) return next();
+
+  const check = validateTargetUrl(target);
+  if (!check.ok) {
+    return res.status(403).json({ error: check.reason, errorType: 'SSRF_BLOCKED' });
+  }
+  next();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  5. PUPPETEER
 // ═══════════════════════════════════════════════════════════
 
 let browserInstance = null;
@@ -116,9 +157,16 @@ async function getReusablePage() {
 
   await page.setRequestInterception(true);
   page.on('request', (req) => {
-    const type = req.resourceType();
-    if (['font', 'media'].includes(type)) req.abort();
-    else req.continue();
+    try {
+      const type = req.resourceType();
+      if (['font', 'media'].includes(type)) {
+        req.abort().catch(() => {});
+      } else {
+        req.continue().catch(() => {});
+      }
+    } catch {
+      // Page déjà fermée
+    }
   });
 
   reusablePage = page;
@@ -145,7 +193,7 @@ const insecureAgent = new UndiciAgent({
 });
 
 // ═══════════════════════════════════════════════════════════
-//  5. FETCH HELPERS
+//  6. FETCH HELPERS
 // ═══════════════════════════════════════════════════════════
 
 async function fetchPage(url, timeoutMs = 12000) {
@@ -239,7 +287,7 @@ async function fetchPageWithBrowser(url, timeoutMs = 30000) {
 }
 
 // ═══════════════════════════════════════════════════════════
-//  6. CLASSIFICATION
+//  7. CLASSIFICATION
 // ═══════════════════════════════════════════════════════════
 
 const EXCLUDED_PATHS = /\/(login|logout|signin|signup|register|password|reset|oauth|cart|panier|checkout|account|profile|settings|preferences|api\/)/i;
@@ -288,22 +336,31 @@ function scoreRelevance({ type, isInternal, text, url }) {
 }
 
 // ═══════════════════════════════════════════════════════════
-//  7. ENDPOINTS (TOUS APRÈS `const app`)
+//  8. ENDPOINTS
 // ═══════════════════════════════════════════════════════════
 
 // ─── /api/scan ───
-app.post('/api/scan', async (req, res) => {
-  const { url, depth = 1, maxPages = 5, useBrowser = true, skipCache = false } = req.body || {};
+app.post('/api/scan', rateLimit, ssrfGuard, async (req, res) => {
+  const {
+    url,
+    depth = 1,
+    maxPages = 5,
+    useBrowser = true,
+    skipCache = false
+  } = req.body || {};
 
   if (!url || typeof url !== 'string') {
     return res.status(400).json({ error: 'URL manquante ou invalide.' });
   }
 
-  let baseUrl;
-  try { baseUrl = new URL(url); }
-  catch { return res.status(400).json({ error: 'URL malformée.' }); }
+  const check = validateTargetUrl(url);
+  if (!check.ok) return res.status(403).json({ error: check.reason, errorType: 'SSRF_BLOCKED' });
 
-  const cacheKey = getCacheKey(baseUrl.href, depth, maxPages);
+  const baseUrl = check.url;
+  const safeDepth = clamp(depth, 0, LIMITS.MAX_DEPTH);
+  const safeMaxPages = clamp(maxPages, 1, LIMITS.MAX_PAGES);
+
+  const cacheKey = getCacheKey(baseUrl.href, safeDepth, safeMaxPages);
   if (!skipCache) {
     const cached = getFromCache(cacheKey);
     if (cached) {
@@ -320,7 +377,7 @@ app.post('/api/scan', async (req, res) => {
   const errors = [];
   const startTime = Date.now();
 
-  while (queue.length > 0 && pagesScanned.length < maxPages) {
+  while (queue.length > 0 && pagesScanned.length < safeMaxPages) {
     const { url: currentUrl, source, depth: currentDepth } = queue.shift();
 
     if (visited.has(currentUrl)) continue;
@@ -405,7 +462,7 @@ app.post('/api/scan', async (req, res) => {
 
       if (
         isInternal &&
-        currentDepth < depth &&
+        currentDepth < safeDepth &&
         !visited.has(absolute) &&
         !shouldSkipScanning(absolute)
       ) {
@@ -545,18 +602,27 @@ app.post('/api/scan', async (req, res) => {
 });
 
 // ─── /api/extract ───
-app.post('/api/extract', async (req, res) => {
+app.post('/api/extract', rateLimit, async (req, res) => {
   const { urls = [] } = req.body || {};
 
   if (!Array.isArray(urls) || urls.length === 0) {
     return res.status(400).json({ error: 'Liste d\'URLs vide.' });
   }
 
-  const limitedUrls = urls.slice(0, 50);
+  const validated = [];
+  for (const u of urls.slice(0, LIMITS.MAX_EXTRACT_URLS)) {
+    const check = validateTargetUrl(u);
+    if (check.ok) validated.push(check.url.href);
+  }
+
+  if (validated.length === 0) {
+    return res.status(403).json({ error: 'Aucune URL autorisée.', errorType: 'SSRF_BLOCKED' });
+  }
+
   const results = [];
   const startTime = Date.now();
 
-  for (const url of limitedUrls) {
+  for (const url of validated) {
     const ext = url.split('?')[0].split('.').pop().toLowerCase();
     try {
       let result;
@@ -584,9 +650,8 @@ app.post('/api/extract', async (req, res) => {
 });
 
 // ─── /api/detect-apis ───
-app.post('/api/detect-apis', async (req, res) => {
+app.post('/api/detect-apis', rateLimit, ssrfGuard, async (req, res) => {
   const { url, probe = false } = req.body || {};
-
   if (!url) return res.status(400).json({ error: 'URL manquante.' });
 
   try {
@@ -620,7 +685,7 @@ app.post('/api/detect-apis', async (req, res) => {
 });
 
 // ─── /api/probe-rest ───
-app.post('/api/probe-rest', async (req, res) => {
+app.post('/api/probe-rest', rateLimit, ssrfGuard, async (req, res) => {
   const {
     url,
     method = 'GET',
@@ -634,9 +699,10 @@ app.post('/api/probe-rest', async (req, res) => {
     return res.status(400).json({ error: 'URL manquante.' });
   }
 
-  let parsedUrl;
-  try { parsedUrl = new URL(url); }
-  catch { return res.status(400).json({ error: 'URL malformée.' }); }
+  const check = validateTargetUrl(url);
+  if (!check.ok) return res.status(403).json({ error: check.reason, errorType: 'SSRF_BLOCKED' });
+
+  const parsedUrl = check.url;
 
   try {
     const addresses = await lookup(parsedUrl.hostname, { all: true });
@@ -728,7 +794,7 @@ app.post('/api/probe-rest', async (req, res) => {
 });
 
 // ─── /api/analyze-swagger ───
-app.post('/api/analyze-swagger', async (req, res) => {
+app.post('/api/analyze-swagger', rateLimit, async (req, res) => {
   const { url } = req.body || {};
   if (!url) return res.status(400).json({ error: 'URL manquante.' });
 
@@ -808,7 +874,7 @@ app.post('/api/analyze-swagger', async (req, res) => {
   }
 });
 
-// ─── /api/apis-catalog (doit être APRÈS const app) ───
+// ─── /api/apis-catalog ───
 app.get('/api/apis-catalog', (_, res) => {
   res.json({
     success: true,
@@ -818,18 +884,14 @@ app.get('/api/apis-catalog', (_, res) => {
 });
 
 // ─── /api/sitemap ───
-app.post('/api/sitemap', async (req, res) => {
+app.post('/api/sitemap', rateLimit, ssrfGuard, async (req, res) => {
   const { url, includeRSS = false } = req.body || {};
-
   if (!url) return res.status(400).json({ error: 'URL manquante.' });
 
   try {
     const sitemap = await fetchSitemap(url);
-
     let rss = null;
-    if (includeRSS) {
-      rss = await fetchRSS(url);
-    }
+    if (includeRSS) rss = await fetchRSS(url);
 
     res.json({
       success: sitemap.success,
@@ -843,7 +905,7 @@ app.post('/api/sitemap', async (req, res) => {
 });
 
 // ─── /api/scan-full ───
-app.post('/api/scan-full', async (req, res) => {
+app.post('/api/scan-full', rateLimit, ssrfGuard, async (req, res) => {
   const {
     url,
     maxUrls = 50,
@@ -857,11 +919,14 @@ app.post('/api/scan-full', async (req, res) => {
     return res.status(400).json({ error: 'URL manquante ou invalide.' });
   }
 
-  let baseUrl;
-  try { baseUrl = new URL(url); }
-  catch { return res.status(400).json({ error: 'URL malformée.' }); }
+  const check = validateTargetUrl(url);
+  if (!check.ok) return res.status(403).json({ error: check.reason, errorType: 'SSRF_BLOCKED' });
 
-  const cacheKey = `full|${baseUrl.href}|${maxUrls}|${includeRSS}`;
+  const baseUrl = check.url;
+  const safeMaxUrls = clamp(maxUrls, 1, LIMITS.MAX_URLS_FULL);
+  const safeConcurrency = clamp(concurrency, 1, LIMITS.MAX_CONCURRENCY);
+
+  const cacheKey = `full|${baseUrl.href}|${safeMaxUrls}|${includeRSS}`;
   if (!skipCache) {
     const cached = getFromCache(cacheKey);
     if (cached) {
@@ -913,9 +978,7 @@ app.post('/api/scan-full', async (req, res) => {
         if (!href || /^(javascript:|mailto:|tel:|#)/i.test(href)) return;
         try {
           const abs = new URL(href, baseUrl.href).href;
-          if (new URL(abs).hostname === baseUrl.hostname) {
-            urlsToScan.push(abs);
-          }
+          if (new URL(abs).hostname === baseUrl.hostname) urlsToScan.push(abs);
         } catch {}
       });
       urlsToScan = [...new Set(urlsToScan)];
@@ -925,7 +988,7 @@ app.post('/api/scan-full', async (req, res) => {
     }
   }
 
-  urlsToScan = urlsToScan.slice(0, maxUrls);
+  urlsToScan = urlsToScan.slice(0, safeMaxUrls);
 
   if (urlsToScan.length === 0) {
     return res.json({
@@ -938,7 +1001,7 @@ app.post('/api/scan-full', async (req, res) => {
     });
   }
 
-  console.log(`🚀 Scan de ${urlsToScan.length} URLs (concurrency: ${concurrency})`);
+  console.log(`🚀 Scan de ${urlsToScan.length} URLs (concurrency: ${safeConcurrency})`);
 
   const scanOne = async (targetUrl) => {
     if (visited.has(targetUrl)) return;
@@ -948,9 +1011,7 @@ app.post('/api/scan-full', async (req, res) => {
     try {
       page = await fetchPage(targetUrl);
       if (page.status >= 400) throw new Error(`HTTP ${page.status}`);
-      if (useBrowser && isProbablySPA(page.body)) {
-        throw new Error('SPA_DETECTED');
-      }
+      if (useBrowser && isProbablySPA(page.body)) throw new Error('SPA_DETECTED');
     } catch (err) {
       if (useBrowser) {
         try {
@@ -1039,8 +1100,8 @@ app.post('/api/scan-full', async (req, res) => {
     console.log(`✅ ${targetUrl} — ${uniqueLinks.length} liens (${page.via})`);
   };
 
-  for (let i = 0; i < urlsToScan.length; i += concurrency) {
-    const batch = urlsToScan.slice(i, i + concurrency);
+  for (let i = 0; i < urlsToScan.length; i += safeConcurrency) {
+    const batch = urlsToScan.slice(i, i + safeConcurrency);
     await Promise.all(batch.map(scanOne));
   }
 
@@ -1080,107 +1141,92 @@ app.post('/api/scan-full', async (req, res) => {
   res.json(responseData);
 });
 
-// ═══════════════════════════════════════════════════════════
-//  8. HELPERS GÉNÉRAUX
-// ═══════════════════════════════════════════════════════════
+// ─── /api/probe-catalog — NOUVEAU ───
+app.post('/api/probe-catalog', rateLimit, async (req, res) => {
+  const { category = null, maxApis = 15, insecure = false } = req.body || {};
 
-function getStatusText(code) {
-  const map = {
-    200: 'OK', 201: 'Created', 204: 'No Content',
-    301: 'Moved Permanently', 302: 'Found', 304: 'Not Modified',
-    400: 'Bad Request', 401: 'Unauthorized', 403: 'Forbidden',
-    404: 'Not Found', 405: 'Method Not Allowed', 429: 'Too Many Requests',
-    500: 'Internal Server Error', 502: 'Bad Gateway', 503: 'Service Unavailable'
+  const safeMax = clamp(maxApis, 1, 30);
+
+  // Filtre par catégorie si demandé
+  const apis = category
+    ? API_CATALOG.filter(a => a.category === category)
+    : API_CATALOG;
+
+  // Pour chaque API, prend le premier exemple
+  const targets = apis
+    .filter(a => a.examples && a.examples.length > 0)
+    .slice(0, safeMax)
+    .map(a => ({
+      id: a.id,
+      name: a.name,
+      category: a.category,
+      auth: a.auth,
+      url: a.examples[0].url,
+      label: a.examples[0].label
+    }));
+
+  if (targets.length === 0) {
+    return res.status(400).json({ error: 'Aucune API à tester.' });
+  }
+
+  console.log(`🧪 Probe catalogue : ${targets.length} APIs`);
+
+  const results = [];
+  for (const target of targets) {
+    const check = validateTargetUrl(target.url);
+    if (!check.ok) {
+      results.push({
+        ...target,
+        success: false,
+        error: check.reason,
+        errorType: 'SSRF_BLOCKED'
+      });
+      continue;
+    }
+
+    try {
+      const probe = await probeApiEndpoint(target.url, {
+        method: 'GET',
+        timeoutMs: 12000
+      });
+      results.push({
+        ...target,
+        success: probe.success,
+        status: probe.status,
+        statusText: probe.statusText,
+        durationMs: probe.durationMs,
+        isJSON: probe.isJSON,
+        size: probe.size,
+        error: probe.error || null,
+        errorType: probe.errorType || null,
+        security: probe.security || null
+      });
+    } catch (err) {
+      results.push({
+        ...target,
+        success: false,
+        error: err.message,
+        errorType: 'UNKNOWN'
+      });
+    }
+  }
+
+  const summary = {
+    total: results.length,
+    ok: results.filter(r => r.success && r.status < 400).length,
+    redirects: results.filter(r => r.status >= 300 && r.status < 400).length,
+    clientErrors: results.filter(r => r.status >= 400 && r.status < 500).length,
+    serverErrors: results.filter(r => r.status >= 500).length,
+    failed: results.filter(r => !r.success).length
   };
-  return map[code] || '';
-}
 
-function sanitizeHeaders(headers) {
-  const safe = {};
-  const blocked = ['set-cookie', 'cookie', 'authorization'];
-  Object.entries(headers).forEach(([k, v]) => {
-    if (!blocked.includes(k.toLowerCase())) safe[k] = v;
+  res.json({
+    success: true,
+    probedAt: new Date().toISOString(),
+    summary,
+    results
   });
-  return safe;
-}
-
-function analyzeJSONStructure(obj, depth = 0, maxDepth = 3) {
-  if (depth > maxDepth) return '...';
-  if (obj === null) return 'null';
-  if (Array.isArray(obj)) {
-    if (obj.length === 0) return 'array[]';
-    return { type: 'array', length: obj.length, item: analyzeJSONStructure(obj[0], depth + 1, maxDepth) };
-  }
-  if (typeof obj === 'object') {
-    const result = {};
-    Object.entries(obj).slice(0, 20).forEach(([k, v]) => {
-      result[k] = analyzeJSONStructure(v, depth + 1, maxDepth);
-    });
-    return result;
-  }
-  return typeof obj;
-}
-
-function summarizeJSON(obj) {
-  const json = JSON.stringify(obj, null, 2);
-  return {
-    type: Array.isArray(obj) ? 'array' : typeof obj,
-    length: Array.isArray(obj) ? obj.length : Object.keys(obj).length,
-    keys: Array.isArray(obj) ? null : Object.keys(obj).slice(0, 30),
-    sample: json.substring(0, 2500)
-  };
-}
-
-function analyzeSecurity(headers, status) {
-  return {
-    https: true,
-    hsts: !!headers['strict-transport-security'],
-    csp: !!headers['content-security-policy'],
-    xFrameOptions: headers['x-frame-options'] || null,
-    cors: headers['access-control-allow-origin'] || null,
-    needsAuth: status === 401,
-    forbidden: status === 403,
-    rateLimitHint: headers['x-ratelimit-limit'] || headers['retry-after'] || null,
-    server: headers['server'] || null,
-    poweredBy: headers['x-powered-by'] || null
-  };
-}
-
-function detectAPIHints(parsed, headers) {
-  const hints = { hasPagination: false, hasHATEOAS: false, hasLinks: false, dataField: null };
-  if (!parsed) return hints;
-  if (typeof parsed === 'object' && !Array.isArray(parsed)) {
-    if (parsed._links || parsed.links || parsed._embedded) hints.hasHATEOAS = true;
-    if (parsed.total !== undefined || parsed.page !== undefined || parsed.count !== undefined) hints.hasPagination = true;
-    ['data', 'items', 'results', 'content', 'records', '_embedded'].forEach(f => {
-      if (parsed[f] !== undefined) hints.dataField = f;
-    });
-  }
-  if (headers['link']) hints.hasLinks = true;
-  return hints;
-}
-
-function classifyError(err) {
-  const code = err.code || '';
-  if (code.includes('CERT') || code.includes('SSL')) return 'TLS_CERTIFICATE';
-  if (code.includes('TIMEOUT') || code.includes('ABORT')) return 'TIMEOUT';
-  if (code.includes('ENOTFOUND')) return 'DNS_NOT_FOUND';
-  if (code.includes('ECONNREFUSED')) return 'CONNECTION_REFUSED';
-  if (code.includes('ECONNRESET')) return 'CONNECTION_RESET';
-  return 'UNKNOWN';
-}
-
-function getErrorHint(err) {
-  const type = classifyError(err);
-  return {
-    TLS_CERTIFICATE: 'Certificat auto-signé ou invalide. Essaie avec insecure: true (dev uniquement).',
-    TIMEOUT: 'Le serveur ne répond pas dans les temps.',
-    DNS_NOT_FOUND: 'Le nom de domaine ne résout pas. Vérifie /etc/hosts ou VPN.',
-    CONNECTION_REFUSED: 'Le port est fermé ou le service down.',
-    CONNECTION_RESET: 'La connexion a été coupée.',
-    UNKNOWN: 'Erreur inconnue.'
-  }[type] || 'Regarde le message d\'erreur complet.';
-}
+});
 
 // ═══════════════════════════════════════════════════════════
 //  9. HEALTH
@@ -1193,7 +1239,8 @@ app.get('/api/health', (_, res) =>
     version: '4.0.0',
     node: process.version,
     browser: !!browserInstance,
-    cacheSize: scanCache.size
+    cacheSize: scanCache.size,
+    rateLimitEntries: rateLimitStore.size
   })
 );
 
